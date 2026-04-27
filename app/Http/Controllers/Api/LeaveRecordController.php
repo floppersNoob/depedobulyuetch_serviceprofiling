@@ -41,8 +41,8 @@ class LeaveRecordController extends Controller
     {
         $validated = $request->validate([
             'service_id' => 'required|exists:service_records,service_id',
-            'leave_type' => 'required|string|max:255',
-            'date_from' => 'required|date',
+            'leave_type' => 'nullable|string|max:255',
+            'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 

@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Alert from '../components/Alert.jsx';
 
-const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecordId, employeeId: propEmployeeId }) => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
-    const isEdit = Boolean(id || propServiceRecordId);
-    // Prioritize prop over URL parameter when in modal mode (when isOpen is defined)
-    const serviceRecordId = isOpen !== undefined ? propServiceRecordId : (id || propServiceRecordId);
-    const preselectedEmployee = propEmployeeId || searchParams.get('employee_id');
-
+const ServiceRecordAddForm = ({ isOpen, onClose, employeeId }) => {
     // Main service record data
     const [formData, setFormData] = useState({
-        employee_id: preselectedEmployee || '',
+        employee_id: employeeId || '',
         position_id: '',
         status_id: '',
-        office_id: '',
         station_place: '',
         branch: '',
         date_from: '',
@@ -33,110 +23,34 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
     const [separationData, setSeparationData] = useState({ separation_date: '', cause: '' });
 
     // Dropdowns
-    const [employees, setEmployees] = useState([]);
     const [positions, setPositions] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [offices, setOffices] = useState([]);
     const [selectedStatus, setSelectedStatus] = useState(null);
 
-    const [loading, setLoading] = useState(isEdit);
+    const [loading, setLoading] = useState(false);
     const [alert, setAlert] = useState(null);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchDropdownData();
-        if (isEdit) {
-            // Reset form data before fetching new record
-            setFormData({
-                employee_id: '',
-                position_id: '',
-                status_id: '',
-                office_id: '',
-                station_place: '',
-                branch: '',
-                date_from: '',
-                date_to: ''
-            });
-            setSalaryAmount('');
-            setLeaveData({ leave_type: '', date_from: '', date_to: '' });
-            setSeparationData({ separation_date: '', cause: '' });
-            setSelectedStatus(null);
-            setLoading(true);
-            fetchServiceRecord();
-        } else {
-            // Reset form data when in add mode
-            setFormData({
-                employee_id: preselectedEmployee || '',
-                position_id: '',
-                status_id: '',
-                office_id: '',
-                station_place: '',
-                branch: '',
-                date_from: '',
-                date_to: ''
-            });
-            setSalaryAmount('');
-            setLeaveData({ leave_type: '', date_from: '', date_to: '' });
-            setSeparationData({ separation_date: '', cause: '' });
-            setSelectedStatus(null);
-        }
-    }, [serviceRecordId, propEmployeeId]);
+    }, []);
 
     // Removed calculation logic - just store amount and unit as-is
 
     const fetchDropdownData = async () => {
         try {
-            const [empRes, posRes, statRes, offRes] = await Promise.all([
-                axios.get('/api/employees?per_page=1000'),
+            const [posRes, statRes, offRes] = await Promise.all([
                 axios.get('/api/positions'),
                 axios.get('/api/employment-status'),
                 axios.get('/api/offices')
             ]);
-            setEmployees(empRes.data.data || []);
             setPositions(posRes.data || []);
             setStatuses(statRes.data || []);
             setOffices(offRes.data || []);
         } catch (error) {
             console.error('Failed to load dropdown data', error);
         }
-    };
-
-    const fetchServiceRecord = async () => {
-        try {
-            const response = await axios.get(`/api/service-records/${serviceRecordId}`);
-            const record = response.data;
-            setFormData({
-                employee_id: record.employee_id,
-                position_id: record.position_id,
-                status_id: record.status_id,
-                office_id: record.office_id,
-                station_place: record.office?.station_place || record.office?.department || '',
-                branch: record.office?.branch || '',
-                date_from: record.date_from,
-                date_to: record.date_to || ''
-            });
-            // Load existing salary if any
-            if (record.salary_histories && record.salary_histories.length > 0) {
-                const latestSalary = record.salary_histories[0];
-                setRateUnit(latestSalary.rate_unit || 'daily');
-                setSalaryAmount(latestSalary.amount);
-            }
-            // Load leave if any
-            if (record.leave_records && record.leave_records.length > 0) {
-                const leave = record.leave_records[0];
-                setLeaveData({ leave_type: leave.leave_type, date_from: leave.date_from, date_to: leave.date_to || '' });
-            }
-            // Load separation if any
-            if (record.separation_record) {
-                setSeparationData({
-                    separation_date: record.separation_record.separation_date,
-                    cause: record.separation_record.cause
-                });
-            }
-        } catch (error) {
-            setAlert({ message: 'Failed to load service record', type: 'error' });
-        }
-        setLoading(false);
     };
 
     const handleChange = (e) => {
@@ -155,15 +69,9 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
         setErrors({});
 
         try {
-            let recordId = serviceRecordId;
-
-            // Create/update service record
-            if (isEdit) {
-                await axios.put(`/api/service-records/${serviceRecordId}`, formData);
-            } else {
-                const response = await axios.post('/api/service-records', formData);
-                recordId = response.data.service_id;
-            }
+            // Create service record
+            const response = await axios.post('/api/service-records', formData);
+            const serviceRecordId = response.data.service_id;
 
             // Save salary history
             const status = statuses.find(s => s.status_id == formData.status_id);
@@ -171,7 +79,7 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
 
             if (salaryAmount) {
                 const salaryData = {
-                    service_id: recordId,
+                    service_id: serviceRecordId,
                     amount: salaryAmount,
                     rate_unit: isCasual ? 'daily' : rateUnit,
                     effective_date: formData.date_from
@@ -179,96 +87,42 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 await axios.post('/api/salary-history', salaryData);
             }
 
-            // Handle leave record - create, update, or delete
-            if (isEdit) {
-                // Get existing leave records
-                const existingLeave = await axios.get(`/api/service-records/${recordId}`);
-                const leaveRecords = existingLeave.data.leave_records || [];
-
-                if (leaveData.leave_type && leaveData.date_from) {
-                    // Update or create leave record
-                    if (leaveRecords.length > 0) {
-                        await axios.put(`/api/leave-records/${leaveRecords[0].leave_id}`, {
-                            service_id: recordId,
-                            ...leaveData
-                        });
-                    } else {
-                        await axios.post('/api/leave-records', {
-                            service_id: recordId,
-                            ...leaveData
-                        });
-                    }
-                } else if (leaveRecords.length > 0) {
-                    // Delete existing leave records if fields are cleared
-                    await axios.delete(`/api/leave-records/${leaveRecords[0].leave_id}`);
-                }
-            } else {
-                // Create new leave record if provided
-                if (leaveData.leave_type && leaveData.date_from) {
-                    await axios.post('/api/leave-records', {
-                        service_id: recordId,
-                        ...leaveData
-                    });
-                }
+            // Create leave record if provided
+            if (leaveData.leave_type && leaveData.date_from) {
+                await axios.post('/api/leave-records', {
+                    service_id: serviceRecordId,
+                    ...leaveData
+                });
             }
 
-            // Handle separation record - create, update, or delete
-            if (isEdit) {
-                const existingRecord = await axios.get(`/api/service-records/${recordId}`);
-                const separationRecord = existingRecord.data.separation_record;
-
-                if (separationData.separation_date || separationData.cause) {
-                    // Update or create separation record
-                    if (separationRecord) {
-                        await axios.put(`/api/separation-records/${separationRecord.separation_id}`, {
-                            service_id: recordId,
-                            ...separationData
-                        });
-                    } else {
-                        await axios.post('/api/separation-records', {
-                            service_id: recordId,
-                            ...separationData
-                        });
-                    }
-                } else if (separationRecord) {
-                    // Delete existing separation record if fields are cleared
-                    await axios.delete(`/api/separation-records/${separationRecord.separation_id}`);
-                }
-            } else {
-                // Create new separation record if provided
-                if (separationData.separation_date || separationData.cause) {
-                    await axios.post('/api/separation-records', {
-                        service_id: recordId,
-                        ...separationData
-                    });
-                }
+            // Create separation record if provided
+            if (separationData.separation_date || separationData.cause) {
+                await axios.post('/api/separation-records', {
+                    service_id: serviceRecordId,
+                    ...separationData
+                });
             }
 
-            // Navigate or close modal
-            if (onClose) {
-                onClose();
-            } else {
-                navigate(`/employees/${formData.employee_id}`);
-            }
+            onClose();
         } catch (error) {
             if (error.response?.data?.errors) {
                 setErrors(error.response.data.errors);
             } else {
-                setAlert({ message: `Failed to ${isEdit ? 'update' : 'create'} service record`, type: 'error' });
+                setAlert({ message: 'Failed to create service record', type: 'error' });
             }
         }
     };
 
     const isCasual = selectedStatus?.status_name?.toLowerCase() === 'casual';
 
-    if (loading) return <div className="text-center py-8">Loading...</div>;
+    if (!isOpen) return null;
 
     const formContent = (
         <>
             <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
 
             <h1 className="text-2xl font-bold text-gray-800 mb-6">
-                {isEdit ? 'Edit Service Record' : 'Add Service Record'}
+                Add Service Record
             </h1>
 
             <form onSubmit={handleSubmit}>
@@ -305,25 +159,6 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                     <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Record of Appointment</h2>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Employee *</label>
-                            <select
-                                name="employee_id"
-                                value={formData.employee_id}
-                                onChange={handleChange}
-                                required
-                                disabled={isEdit}
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-                            >
-                                <option value="">Select Employee</option>
-                                {employees.map((emp) => (
-                                    <option key={emp.employee_id} value={emp.employee_id}>
-                                        {emp.surname}, {emp.given_name} {emp.middle_name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Designation *
@@ -509,43 +344,30 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 <div className="flex justify-end space-x-3">
                     <button
                         type="button"
-                        onClick={() => onClose ? onClose() : navigate(formData.employee_id ? `/employees/${formData.employee_id}` : '/employees')}
+                        onClick={onClose}
                         className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                     >
                         Cancel
                     </button>
                     <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                        {isEdit ? 'Update Service Record' : 'Save Service Record'}
+                        Save Service Record
                     </button>
                 </div>
             </form>
         </>
     );
 
-    // Render as modal or page
-    if (isOpen !== undefined) {
-        // Modal mode
-        if (!isOpen) return null;
-
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
-                <div
-                    className="absolute inset-0 bg-gray-300/25 backdrop-blur-sm"
-                    onClick={onClose}
-                ></div>
-                <div className="relative bg-white rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.3)] max-w-4xl w-full z-10 max-h-[90vh] overflow-y-auto p-6">
-                    {formContent}
-                </div>
-            </div>
-        );
-    }
-
-    // Page mode (backward compatibility)
     return (
-        <div className="bg-white shadow rounded-lg p-6 max-w-4xl mx-auto">
-            {formContent}
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+            <div
+                className="absolute inset-0 bg-gray-300/25 backdrop-blur-sm"
+                onClick={onClose}
+            ></div>
+            <div className="relative bg-white rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.3)] max-w-4xl w-full z-10 max-h-[90vh] overflow-y-auto p-6">
+                {formContent}
+            </div>
         </div>
     );
 };
 
-export default ServiceRecordForm;
+export default ServiceRecordAddForm;

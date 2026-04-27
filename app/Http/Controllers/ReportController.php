@@ -130,6 +130,8 @@ class ReportController extends Controller
                         $salaryValue = floatval(preg_replace('/[^0-9.]/', '', $salary));
                         if (stripos($salary, '/d') !== false) {
                             $rateUnit = 'daily';
+                        } elseif (stripos($salary, '/mo') !== false || stripos($salary, 'mo') !== false) {
+                            $rateUnit = 'monthly';
                         } elseif (stripos($salary, '/an') !== false) {
                             $rateUnit = 'annually';
                         }
@@ -232,17 +234,6 @@ class ReportController extends Controller
                     ['position_name' => $recordData['designation']]
                 );
 
-                // Check for duplicate service record (same employee, position, and date_from)
-                $existingRecord = ServiceRecord::where('employee_id', $employee->employee_id)
-                    ->where('position_id', $position->position_id)
-                    ->where('date_from', $recordData['date_from'])
-                    ->first();
-
-                if ($existingRecord) {
-                    $skippedCount++;
-                    continue;
-                }
-
                 // Create or find employment status
                 $employmentStatus = null;
                 if (!empty($recordData['status'])) {
@@ -262,6 +253,113 @@ class ReportController extends Controller
                             'branch' => $recordData['branch'] ?: 'Nat\'l'
                         ]
                     );
+                }
+
+                // Check for duplicate service record (same employee, position, and date_from)
+                $existingRecord = ServiceRecord::with(['salaryHistories', 'leaveRecords', 'separationRecord'])
+                    ->where('employee_id', $employee->employee_id)
+                    ->where('position_id', $position->position_id)
+                    ->where('date_from', $recordData['date_from'])
+                    ->first();
+
+                if ($existingRecord) {
+                    // Compare fields to detect changes
+                    $hasChanges = false;
+                    $existingSalary = $existingRecord->salaryHistories->first();
+                    $existingLeave = $existingRecord->leaveRecords->first();
+                    $existingSeparation = $existingRecord->separationRecord;
+
+                    // Compare basic fields
+                    if ($existingRecord->date_to != $recordData['date_to']) $hasChanges = true;
+                    if ($existingRecord->status_id != ($employmentStatus ? $employmentStatus->status_id : null)) $hasChanges = true;
+                    if ($existingRecord->office_id != ($office ? $office->office_id : null)) $hasChanges = true;
+
+                    // Compare salary
+                    if ($existingSalary) {
+                        if ($existingSalary->amount != $recordData['salary']) $hasChanges = true;
+                        if ($existingSalary->rate_unit != $recordData['salary_unit']) $hasChanges = true;
+                    } else {
+                        if (!empty($recordData['salary'])) $hasChanges = true;
+                    }
+
+                    // Compare leave
+                    $leaveValue = !empty($recordData['leave']) ? trim($recordData['leave']) : null;
+                    if ($existingLeave) {
+                        if ($existingLeave->leave_type != $leaveValue) $hasChanges = true;
+                    } else {
+                        if (!empty($leaveValue) && strtolower($leaveValue) !== 'none') $hasChanges = true;
+                    }
+
+                    // Compare separation
+                    if ($existingSeparation) {
+                        if ($existingSeparation->separation_date != $recordData['separation_date']) $hasChanges = true;
+                        if ($existingSeparation->cause != trim($recordData['separation_cause'] ?? '')) $hasChanges = true;
+                    } else {
+                        if (!empty($recordData['separation_date']) || !empty(trim($recordData['separation_cause'] ?? ''))) $hasChanges = true;
+                    }
+
+                    // Only skip if no changes detected
+                    if (!$hasChanges) {
+                        $skippedCount++;
+                        continue;
+                    }
+
+                    // Update existing record
+                    $existingRecord->update([
+                        'date_to' => $recordData['date_to'],
+                        'status_id' => $employmentStatus ? $employmentStatus->status_id : null,
+                        'office_id' => $office ? $office->office_id : null,
+                    ]);
+
+                    // Update salary history
+                    if (!empty($recordData['salary'])) {
+                        if ($existingSalary) {
+                            $existingSalary->update([
+                                'amount' => $recordData['salary'],
+                                'rate_unit' => $recordData['salary_unit'],
+                            ]);
+                        } else {
+                            SalaryHistory::create([
+                                'service_id' => $existingRecord->service_id,
+                                'amount' => $recordData['salary'],
+                                'rate_unit' => $recordData['salary_unit'],
+                                'effective_date' => $recordData['date_from'] ?? now(),
+                            ]);
+                        }
+                    }
+
+                    // Update leave record
+                    if ($existingLeave) {
+                        $existingLeave->update([
+                            'leave_type' => $leaveValue,
+                            'date_from' => $recordData['date_from'] ?? now(),
+                        ]);
+                    } else if (!empty($leaveValue) && strtolower($leaveValue) !== 'none') {
+                        LeaveRecord::create([
+                            'service_id' => $existingRecord->service_id,
+                            'leave_type' => $leaveValue,
+                            'date_from' => $recordData['date_from'] ?? now(),
+                        ]);
+                    }
+
+                    // Update separation record
+                    if (!empty($recordData['separation_date']) || !empty(trim($recordData['separation_cause'] ?? ''))) {
+                        if ($existingSeparation) {
+                            $existingSeparation->update([
+                                'separation_date' => $recordData['separation_date'] ?? null,
+                                'cause' => trim($recordData['separation_cause'] ?? ''),
+                            ]);
+                        } else {
+                            SeparationRecord::create([
+                                'service_id' => $existingRecord->service_id,
+                                'separation_date' => $recordData['separation_date'] ?? null,
+                                'cause' => trim($recordData['separation_cause'] ?? ''),
+                            ]);
+                        }
+                    }
+
+                    $importedCount++;
+                    continue;
                 }
 
                 // Create service record

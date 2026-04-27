@@ -40,8 +40,8 @@ class SeparationRecordController extends Controller
     {
         $validated = $request->validate([
             'service_id' => 'required|exists:service_records,service_id',
-            'separation_date' => 'required|date',
-            'cause' => 'required|string|max:255',
+            'separation_date' => 'nullable|date',
+            'cause' => 'nullable|string|max:255',
         ]);
 
         $separation = SeparationRecord::findOrFail($id);

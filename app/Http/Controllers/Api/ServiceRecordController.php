@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceRecord;
 use App\Models\Office;
+use App\Models\Position;
 use Illuminate\Http\Request;
 
 class ServiceRecordController extends Controller
@@ -37,11 +38,26 @@ class ServiceRecordController extends Controller
         return $office->office_id;
     }
 
+    private function getOrCreatePosition($positionName)
+    {
+        // Find existing position by name
+        $position = Position::where('position_name', $positionName)->first();
+        
+        if (!$position) {
+            // Create new position
+            $position = Position::create([
+                'position_name' => $positionName,
+            ]);
+        }
+        
+        return $position->position_id;
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,employee_id',
-            'position_id' => 'required|exists:positions,position_id',
+            'position_id' => 'required|string|max:255',
             'status_id' => 'required|exists:employment_status,status_id',
             'station_place' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
@@ -49,12 +65,25 @@ class ServiceRecordController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 
-        // Get or create office
+        // Get or create office and position
         $officeId = $this->getOrCreateOffice($validated['station_place'], $validated['branch'] ?? null);
+        $positionId = $this->getOrCreatePosition($validated['position_id']);
+        
+        // Close previous "present" record by setting date_to to one day before new date_from
+        $previousRecord = ServiceRecord::where('employee_id', $validated['employee_id'])
+            ->whereNull('date_to')
+            ->orderBy('date_from', 'desc')
+            ->first();
+            
+        if ($previousRecord) {
+            $previousRecord->update([
+                'date_to' => date('Y-m-d', strtotime($validated['date_from'] . ' -1 day'))
+            ]);
+        }
         
         $serviceRecord = ServiceRecord::create([
             'employee_id' => $validated['employee_id'],
-            'position_id' => $validated['position_id'],
+            'position_id' => $positionId,
             'status_id' => $validated['status_id'],
             'office_id' => $officeId,
             'date_from' => $validated['date_from'],
@@ -75,7 +104,7 @@ class ServiceRecordController extends Controller
     {
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,employee_id',
-            'position_id' => 'required|exists:positions,position_id',
+            'position_id' => 'required|string|max:255',
             'status_id' => 'required|exists:employment_status,status_id',
             'station_place' => 'required|string|max:255',
             'branch' => 'nullable|string|max:255',
@@ -83,13 +112,14 @@ class ServiceRecordController extends Controller
             'date_to' => 'nullable|date|after_or_equal:date_from',
         ]);
 
-        // Get or create office
+        // Get or create office and position
         $officeId = $this->getOrCreateOffice($validated['station_place'], $validated['branch'] ?? null);
+        $positionId = $this->getOrCreatePosition($validated['position_id']);
 
         $serviceRecord = ServiceRecord::findOrFail($id);
         $serviceRecord->update([
             'employee_id' => $validated['employee_id'],
-            'position_id' => $validated['position_id'],
+            'position_id' => $positionId,
             'status_id' => $validated['status_id'],
             'office_id' => $officeId,
             'date_from' => $validated['date_from'],

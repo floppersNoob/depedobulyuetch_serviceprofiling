@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import Alert from '../components/Alert.jsx';
+import ServiceRecordForm from './ServiceRecordForm.jsx';
+import ServiceRecordAddForm from './ServiceRecordAddForm.jsx';
 
 const EmployeeShow = () => {
     const { id } = useParams();
@@ -13,6 +15,9 @@ const EmployeeShow = () => {
     const [importing, setImporting] = useState(false);
     const [parsedRecords, setParsedRecords] = useState([]);
     const [showPreview, setShowPreview] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingServiceRecordId, setEditingServiceRecordId] = useState(null);
 
     useEffect(() => {
         fetchEmployee();
@@ -111,6 +116,26 @@ const EmployeeShow = () => {
         setParsedRecords([]);
     };
 
+    const openAddModal = () => {
+        setIsAddModalOpen(true);
+    };
+
+    const closeAddModal = () => {
+        setIsAddModalOpen(false);
+        fetchEmployee(); // Refresh the employee data to show changes
+    };
+
+    const openEditModal = (recordId) => {
+        setEditingServiceRecordId(recordId);
+        setIsEditModalOpen(true);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setEditingServiceRecordId(null);
+        fetchEmployee(); // Refresh the employee data to show changes
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
         const date = new Date(dateStr);
@@ -123,11 +148,18 @@ const EmployeeShow = () => {
 
     const formatSalary = (amount, unit) => {
         if (!amount) return '-';
-        const formatted = amount.toLocaleString('en-US', {
+        const numericAmount = parseFloat(amount);
+        const formatted = numericAmount.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
-        return `${formatted}/${unit}`;
+        const unitLabels = {
+            daily: 'daily',
+            monthly: 'monthly',
+            annually: 'annually',
+            annual: 'annually'
+        };
+        return `${formatted}/${unitLabels[unit] || unit}`;
     };
 
     if (loading) return <div className="text-center py-8">Loading...</div>;
@@ -183,31 +215,32 @@ const EmployeeShow = () => {
                         >
                             Import Excel
                         </button>
-                        <Link
-                            to={`/service-records/create?employee_id=${id}`}
+                        <button
+                            onClick={openAddModal}
                             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                         >
                             Add Service Record
-                        </Link>
+                        </button>
                     </div>
                 </div>
 
                 {!employee.service_records || employee.service_records.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">
                         No service records found.{' '}
-                        <Link to={`/service-records/create?employee_id=${id}`} className="text-blue-600 hover:underline">
+                        <button onClick={openAddModal} className="text-blue-600 hover:underline">
                             Add one
-                        </Link>
+                        </button>
                     </p>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yy)</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Office</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salary</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station/Place</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leave w/o Pay</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Date</th>
@@ -228,36 +261,42 @@ const EmployeeShow = () => {
                                         <td className="px-4 py-3 text-sm">
                                             {record.position?.position_name || '-'}
                                         </td>
+
                                         <td className="px-4 py-3 whitespace-nowrap text-sm">
                                             {record.employment_status?.status_name || '-'}
                                         </td>
+                                        
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                            {record.salary_histories && record.salary_histories.length > 0
+                                                ? formatSalary(record.salary_histories[0].amount, record.salary_histories[0].rate_unit)
+                                                : '-'
+                                            }
+                                        </td>
+
                                         <td className="px-4 py-3 text-sm">
                                             {record.office?.department || '-'}
-                                            {record.office?.station_place && `, ${record.office.station_place}`}
                                         </td>
+
                                         <td className="px-4 py-3 text-sm">{record.office?.branch || '-'}</td>
+
                                         <td className="px-4 py-3 text-sm">
                                             {record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}
                                         </td>
+
                                         <td className="px-4 py-3 text-sm">
                                             {formatDate(record.separation_record?.separation_date)}
                                         </td>
+
                                         <td className="px-4 py-3 text-sm">
                                             {record.separation_record?.cause || '-'}
                                         </td>
                                         <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
-                                            <Link
-                                                to={`/service-records/${record.service_id}`}
-                                                className="text-blue-600 hover:text-blue-900"
-                                            >
-                                                Details
-                                            </Link>
-                                            <Link
-                                                to={`/service-records/${record.service_id}/edit`}
+                                            <button
+                                                onClick={() => openEditModal(record.service_id)}
                                                 className="text-yellow-600 hover:text-yellow-900"
                                             >
                                                 Edit
-                                            </Link>
+                                            </button>
                                             <button
                                                 onClick={() => handleDeleteServiceRecord(record.service_id)}
                                                 className="text-red-600 hover:text-red-900"
@@ -394,6 +433,24 @@ const EmployeeShow = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Add Service Record Modal */}
+            <ServiceRecordAddForm
+                isOpen={isAddModalOpen}
+                onClose={closeAddModal}
+                employeeId={id}
+            />
+
+            {/* Edit Service Record Modal */}
+            {isEditModalOpen && (
+                <ServiceRecordForm
+                    key={editingServiceRecordId}
+                    isOpen={isEditModalOpen}
+                    onClose={closeEditModal}
+                    serviceRecordId={editingServiceRecordId}
+                    employeeId={id}
+                />
             )}
         </div>
     );
