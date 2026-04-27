@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\SalaryHistory;
+use Illuminate\Http\Request;
+
+class SalaryHistoryController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = SalaryHistory::with('serviceRecord');
+        
+        if ($request->has('service_id')) {
+            $query->where('service_id', $request->input('service_id'));
+        }
+        
+        return $query->orderBy('effective_date', 'desc')->get();
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'service_id' => 'required|exists:service_records,service_id',
+            'amount' => 'required|numeric|min:0',
+            'rate_unit' => 'required|string|max:255',
+            'effective_date' => 'required|date',
+        ]);
+
+        $salary = SalaryHistory::create($validated);
+        return response()->json($salary, 201);
+    }
+
+    public function show(string $id)
+    {
+        return SalaryHistory::with('serviceRecord')->findOrFail($id);
+    }
+
+    public function update(Request $request, string $id)
+    {
+        $validated = $request->validate([
+            'service_id' => 'required|exists:service_records,service_id',
+            'amount' => 'required|numeric|min:0',
+            'rate_unit' => 'required|string|max:255',
+            'effective_date' => 'required|date',
+        ]);
+
+        $salary = SalaryHistory::findOrFail($id);
+        $salary->update($validated);
+        return response()->json($salary);
+    }
+
+    public function destroy(string $id)
+    {
+        $salary = SalaryHistory::findOrFail($id);
+        $salary->delete();
+        return response()->json(null, 204);
+    }
+}
