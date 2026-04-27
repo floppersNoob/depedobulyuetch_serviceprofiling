@@ -119,13 +119,70 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-                        <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                        <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+            <div className="space-y-6">
+                {/* Welcome Header Skeleton */}
+                <div className="glass-card rounded-2xl p-4 flex justify-between items-center animate-pulse">
+                    <div className="flex-1">
+                        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                     </div>
-                ))}
+                    <div className="h-10 bg-gray-200 rounded w-32"></div>
+                </div>
+
+                {/* Stat Cards Skeleton */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={`stat-${i}`} className="glass-card rounded-2xl shadow p-6 animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* 3-Column Grid Skeleton */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Donut Chart Skeleton */}
+                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                        <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                        <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+
+                    {/* Recent Employees Skeleton */}
+                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map(i => (
+                                <div key={`emp-${i}`} className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                                    <div className="flex-1">
+                                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Activity Feed Skeleton */}
+                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                        <div className="space-y-4">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={`act-${i}`} className="flex items-start gap-3">
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                    <div className="flex-1">
+                                        <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -209,7 +266,7 @@ const Dashboard = () => {
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {recentEmployees.map(emp => (
+                            {recentEmployees.slice(0, 3).map(emp => (
                                 <Link
                                     key={emp.employee_id}
                                     to={`/employees/${emp.employee_id}`}
@@ -238,7 +295,7 @@ const Dashboard = () => {
                                 No recent activity
                             </div>
                         ) : (
-                            activities.map((activity) => {
+                            activities.slice(0, 5).map((activity) => {
                                 const iconColor = activity.action === 'created' ? 'bg-blue-100 text-blue-600' :
                                                    activity.action === 'updated' ? 'bg-purple-100 text-purple-600' :
                                                    activity.action === 'deleted' ? 'bg-red-100 text-red-600' :
