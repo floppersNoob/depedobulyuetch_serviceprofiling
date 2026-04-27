@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmploymentStatus;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class EmploymentStatusController extends Controller
@@ -20,6 +21,14 @@ class EmploymentStatusController extends Controller
         ]);
 
         $status = EmploymentStatus::create($validated);
+
+        ActivityLog::create([
+            'action' => 'created',
+            'model_type' => 'EmploymentStatus',
+            'model_id' => $status->status_id,
+            'description' => "Employment status '{$status->status_name}' was added",
+        ]);
+
         return response()->json($status, 201);
     }
 
@@ -35,14 +44,32 @@ class EmploymentStatusController extends Controller
         ]);
 
         $status = EmploymentStatus::findOrFail($id);
+        $oldName = $status->status_name;
         $status->update($validated);
+
+        ActivityLog::create([
+            'action' => 'updated',
+            'model_type' => 'EmploymentStatus',
+            'model_id' => $status->status_id,
+            'description' => "Employment status '{$oldName}' was updated to '{$status->status_name}'",
+        ]);
+
         return response()->json($status);
     }
 
     public function destroy(string $id)
     {
         $status = EmploymentStatus::findOrFail($id);
+        $name = $status->status_name;
         $status->delete();
+
+        ActivityLog::create([
+            'action' => 'deleted',
+            'model_type' => 'EmploymentStatus',
+            'model_id' => $status->status_id,
+            'description' => "Employment status '{$name}' was deleted",
+        ]);
+
         return response()->json(null, 204);
     }
 }

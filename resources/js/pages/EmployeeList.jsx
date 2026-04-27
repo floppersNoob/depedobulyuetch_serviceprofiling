@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '../components/Pagination.jsx';
@@ -8,8 +8,10 @@ const EmployeeList = () => {
     const [employees, setEmployees] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [search, setSearch] = useState('');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [showSkeleton, setShowSkeleton] = useState(false);
     const isInitialLoad = useRef(true);
+    const loadingTimeoutRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         surname: '',
@@ -36,6 +38,11 @@ const EmployeeList = () => {
     useEffect(() => {
         fetchEmployees();
         fetchFilterData();
+        return () => {
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+            }
+        };
     }, []);
 
     useEffect(() => {
@@ -47,9 +54,11 @@ const EmployeeList = () => {
     }, [search]);
 
     const fetchEmployees = async (page = 1, searchTerm = '') => {
-        if (isInitialLoad.current) {
-            setLoading(true);
-        }
+        setLoading(true);
+        loadingTimeoutRef.current = setTimeout(() => {
+            setShowSkeleton(true);
+        }, 300);
+
         try {
             const params = { page, search: searchTerm };
             const response = await axios.get('/api/employees', { params });
@@ -59,8 +68,13 @@ const EmployeeList = () => {
         } catch (error) {
             console.error('Fetch error:', error);
             addToast('Failed to load employees', 'error');
+        } finally {
+            if (loadingTimeoutRef.current) {
+                clearTimeout(loadingTimeoutRef.current);
+            }
+            setLoading(false);
+            setShowSkeleton(false);
         }
-        setLoading(false);
         isInitialLoad.current = false;
     };
 
@@ -104,7 +118,7 @@ const EmployeeList = () => {
         return years;
     };
 
-    const getFilteredEmployees = () => {
+    const filteredEmployees = useMemo(() => {
         return employees.filter(employee => {
             // Filter by office (based on most recent service record)
             if (filters.office) {
@@ -145,7 +159,7 @@ const EmployeeList = () => {
 
             return true;
         });
-    };
+    }, [employees, filters]);
 
     const handleDelete = async (id) => {
         if (!confirm('Are you sure you want to delete this employee?')) return;
@@ -201,7 +215,7 @@ const EmployeeList = () => {
         setFormLoading(false);
     };
 
-    if (loading) {
+    if (showSkeleton) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3, 4, 5, 6].map(i => (
@@ -304,7 +318,7 @@ const EmployeeList = () => {
             </div>
 
             {/* Modern Card Grid */}
-            {getFilteredEmployees().length === 0 ? (
+            {filteredEmployees.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-lg shadow">
                     <div className="text-6xl mb-4 text-gray-400"><i className="fas fa-users-slash"></i></div>
                     <h3 className="text-lg font-semibold text-dpwh-blue mb-2">No employees found</h3>
@@ -318,7 +332,7 @@ const EmployeeList = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {getFilteredEmployees().map((employee) => (
+                    {filteredEmployees.map((employee) => (
                         <div key={employee.employee_id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group overflow-hidden">
                             <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2"></div>
                             <div className="p-6">

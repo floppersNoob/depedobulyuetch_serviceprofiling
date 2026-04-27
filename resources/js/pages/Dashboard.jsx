@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useToast } from '../components/Toast.jsx';
 import DonutChart from '../components/DonutChart.jsx';
+
+// Module-level cache persists between navigation
+const dashboardCache = {
+    data: null,
+    timestamp: 0
+};
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const Dashboard = () => {
     const [stats, setStats] = useState({
@@ -13,7 +21,11 @@ const Dashboard = () => {
     });
     const [recentEmployees, setRecentEmployees] = useState([]);
     const [activities, setActivities] = useState([]);
+    const [statusDistribution, setStatusDistribution] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showSkeleton, setShowSkeleton] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const minLoadTimeRef = useRef(null);
     const { addToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
@@ -27,34 +39,73 @@ const Dashboard = () => {
     const [formLoading, setFormLoading] = useState(false);
 
     useEffect(() => {
-        fetchStats();
+        const cached = dashboardCache.data;
+        const isCacheValid = cached && (Date.now() - dashboardCache.timestamp < CACHE_DURATION);
+
+        if (isCacheValid) {
+            // Show cached data immediately
+            setStats(cached.stats);
+            setRecentEmployees(cached.recentEmployees);
+            setActivities(cached.activities);
+            setStatusDistribution(cached.statusDistribution || []);
+            setLoading(false);
+            setShowSkeleton(false);
+            // Refresh in background
+            fetchStats(true);
+        } else {
+            // No cache - show skeleton for minimum 2 seconds
+            fetchStats(false);
+        }
     }, []);
 
-    const fetchStats = async () => {
+    const fetchStats = async (backgroundRefresh = false) => {
+        if (backgroundRefresh) {
+            setIsRefreshing(true);
+        } else {
+            setLoading(true);
+            setShowSkeleton(true);
+            // Minimum 2 second skeleton display
+            minLoadTimeRef.current = Date.now();
+        }
+
         try {
-            const [empRes, posRes, offRes, actRes] = await Promise.all([
-                axios.get('/api/employees'),
-                axios.get('/api/positions'),
-                axios.get('/api/offices'),
-                axios.get('/api/activity-logs')
+            const [statsRes, recentRes, actRes] = await Promise.all([
+                axios.get('/api/dashboard/stats'),
+                axios.get('/api/dashboard/recent-employees'),
+                axios.get('/api/dashboard/activities')
             ]);
 
-            const employees = empRes.data.data || [];
-            const totalServiceRecords = employees.reduce((acc, emp) => acc + (emp.service_records_count || 0), 0);
+            const statusRes = await axios.get('/api/dashboard/status-distribution');
 
-            setStats({
-                employees: empRes.data.total || employees.length,
-                serviceRecords: totalServiceRecords,
-                positions: posRes.data.length || 0,
-                offices: offRes.data.length || 0
-            });
+            const newData = {
+                stats: statsRes.data,
+                recentEmployees: recentRes.data || [],
+                activities: actRes.data || [],
+                statusDistribution: statusRes.data || []
+            };
 
-            setRecentEmployees(employees.slice(0, 5));
-            setActivities(actRes.data || []);
+            // Update cache
+            dashboardCache.data = newData;
+            dashboardCache.timestamp = Date.now();
+
+            // For initial load, ensure minimum 2 second skeleton
+            if (!backgroundRefresh && minLoadTimeRef.current) {
+                const elapsed = Date.now() - minLoadTimeRef.current;
+                const remainingDelay = Math.max(0, 2000 - elapsed);
+                await new Promise(resolve => setTimeout(resolve, remainingDelay));
+            }
+
+            setStats(newData.stats);
+            setRecentEmployees(newData.recentEmployees);
+            setActivities(newData.activities);
+            setStatusDistribution(newData.statusDistribution);
         } catch (error) {
             addToast('Failed to load dashboard data', 'error');
+        } finally {
+            setLoading(false);
+            setShowSkeleton(false);
+            setIsRefreshing(false);
         }
-        setLoading(false);
     };
 
     const getTimeAgo = (dateString) => {
@@ -99,7 +150,10 @@ const Dashboard = () => {
             await axios.post('/api/employees', formData);
             addToast('Employee created successfully', 'success');
             closeModal();
-            fetchStats();
+            // Clear cache to force fresh data on next dashboard visit
+            dashboardCache.data = null;
+            dashboardCache.timestamp = 0;
+            fetchStats(false);
         } catch (error) {
             if (error.response?.data?.errors) {
                 setFormErrors(error.response.data.errors);
@@ -117,24 +171,24 @@ const Dashboard = () => {
         { title: 'Offices', value: stats.offices, icon: 'fas fa-building', color: 'bg-orange-500', link: '/offices' }
     ];
 
-    if (loading) {
+    if (showSkeleton) {
         return (
             <div className="space-y-6">
-                {/* Welcome Header Skeleton */}
-                <div className="glass-card rounded-2xl p-4 flex justify-between items-center animate-pulse">
+                {/* Welcome Header Skeleton - 0ms delay */}
+                <div className="glass-card rounded-2xl p-4 flex justify-between items-center">
                     <div className="flex-1">
-                        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2 animate-[shimmer_2s_infinite]"></div>
+                        <div className="h-4 bg-gray-200 rounded w-2/3 animate-[shimmer_2s_infinite_0.1s]"></div>
                     </div>
-                    <div className="h-10 bg-gray-200 rounded w-32"></div>
+                    <div className="h-10 bg-gray-200 rounded w-32 animate-[shimmer_2s_infinite_0.2s]"></div>
                 </div>
 
-                {/* Stat Cards Skeleton */}
+                {/* Stat Cards Skeleton - staggered 0.1s each */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => (
-                        <div key={`stat-${i}`} className="glass-card rounded-2xl shadow p-6 animate-pulse">
-                            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                    {[0, 0.1, 0.2, 0.3].map((delay, i) => (
+                        <div key={`stat-${i}`} className="glass-card rounded-2xl shadow p-6">
+                            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4 animate-[shimmer_2s_infinite]" style={{animationDelay: `${0.2 + delay}s`}}></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/3 animate-[shimmer_2s_infinite]" style={{animationDelay: `${0.3 + delay}s`}}></div>
                         </div>
                     ))}
                 </div>
@@ -142,25 +196,25 @@ const Dashboard = () => {
                 {/* 3-Column Grid Skeleton */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Donut Chart Skeleton */}
-                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
-                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
-                        <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                    <div className="glass-card rounded-2xl shadow p-6">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4 animate-[shimmer_2s_infinite_0.3s]"></div>
+                        <div className="h-48 bg-gray-200 rounded-full mx-auto mb-4 w-48 animate-[shimmer_2s_infinite_0.4s]"></div>
                         <div className="space-y-2">
-                            <div className="h-4 bg-gray-200 rounded"></div>
-                            <div className="h-4 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-[shimmer_2s_infinite_0.5s]"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-[shimmer_2s_infinite_0.6s]"></div>
                         </div>
                     </div>
 
                     {/* Recent Employees Skeleton */}
-                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
-                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="glass-card rounded-2xl shadow p-6">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4 animate-[shimmer_2s_infinite_0.4s]"></div>
                         <div className="space-y-3">
-                            {[1, 2, 3].map(i => (
+                            {[0.5, 0.6, 0.7].map((delay, i) => (
                                 <div key={`emp-${i}`} className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                                    <div className="w-10 h-10 bg-gray-200 rounded-full animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay}s`}}></div>
                                     <div className="flex-1">
-                                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay + 0.1}s`}}></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/2 animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay + 0.2}s`}}></div>
                                     </div>
                                 </div>
                             ))}
@@ -168,19 +222,27 @@ const Dashboard = () => {
                     </div>
 
                     {/* Activity Feed Skeleton */}
-                    <div className="glass-card rounded-2xl shadow p-6 animate-pulse">
-                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="glass-card rounded-2xl shadow p-6">
+                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4 animate-[shimmer_2s_infinite_0.5s]"></div>
                         <div className="space-y-4">
-                            {[1, 2, 3, 4, 5].map(i => (
+                            {[0.6, 0.7, 0.8, 0.9, 1.0].map((delay, i) => (
                                 <div key={`act-${i}`} className="flex items-start gap-3">
-                                    <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                                    <div className="w-8 h-8 bg-gray-200 rounded-full animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay}s`}}></div>
                                     <div className="flex-1">
-                                        <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                                        <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-full mb-2 animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay + 0.1}s`}}></div>
+                                        <div className="h-3 bg-gray-200 rounded w-1/3 animate-[shimmer_2s_infinite]" style={{animationDelay: `${delay + 0.2}s`}}></div>
                                     </div>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
+
+                {/* Loading indicator */}
+                <div className="text-center py-4">
+                    <div className="inline-flex items-center gap-2 text-gray-400 text-sm">
+                        <i className="fas fa-spinner fa-spin"></i>
+                        <span>Loading dashboard...</span>
                     </div>
                 </div>
             </div>
@@ -194,12 +256,20 @@ const Dashboard = () => {
                     <h1 className="text-xl font-bold">Welcome to DPWH Service Record System</h1>
                     <p className="text-gray-600 text-sm">Manage employee service records efficiently and generate reports instantly.</p>
                 </div>
-                <button
-                    onClick={openModal}
-                    className="bg-[#eb3505] text-white px-4 py-2 rounded-lg hover:bg-[#c92d04] transition-colors font-medium"
-                >
-                    + Add Employee
-                </button>
+                <div className="flex items-center gap-3">
+                    {isRefreshing && (
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <i className="fas fa-sync fa-spin"></i>
+                            Updating...
+                        </span>
+                    )}
+                    <button
+                        onClick={openModal}
+                        className="bg-[#eb3505] text-white px-4 py-2 rounded-lg hover:bg-[#c92d04] transition-colors font-medium"
+                    >
+                        + Add Employee
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -224,31 +294,34 @@ const Dashboard = () => {
 
             {/* 3-Column Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column - Donut Chart (40%) */}
+                {/* Left Column - Donut Chart (40%) - Employment Status Distribution */}
                 <div className="lg:col-span-1 glass-card rounded-2xl shadow p-6">
-                    <h2 className="text-lg font-bold text-dpwh-blue mb-4">Service Record Distribution</h2>
+                    <h2 className="text-lg font-bold text-dpwh-blue mb-4">Employment Status ({new Date().getFullYear()})</h2>
                     <DonutChart
-                        data={[
-                            { value: stats.serviceRecords, color: '#3B82F6' },
-                            { value: Math.max(0, stats.employees - stats.serviceRecords), color: '#93C5FD' }
-                        ]}
+                        data={statusDistribution.map((item, index) => ({
+                            value: item.count,
+                            color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][index % 5]
+                        }))}
                         size={200}
                     />
                     <div className="mt-4 space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="flex items-center">
-                                <span className="w-3 h-3 rounded-full bg-blue-500 mr-2"></span>
-                                With Records
-                            </span>
-                            <span className="font-semibold">{stats.serviceRecords}</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                            <span className="flex items-center">
-                                <span className="w-3 h-3 rounded-full bg-blue-300 mr-2"></span>
-                                Without Records
-                            </span>
-                            <span className="font-semibold">{Math.max(0, stats.employees - stats.serviceRecords)}</span>
-                        </div>
+                        {statusDistribution.map((item, index) => (
+                            <div key={item.status_name} className="flex items-center justify-between text-sm">
+                                <span className="flex items-center">
+                                    <span
+                                        className="w-3 h-3 rounded-full mr-2"
+                                        style={{ backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'][index % 5] }}
+                                    ></span>
+                                    {item.status_name}
+                                </span>
+                                <span className="font-semibold">{item.count}</span>
+                            </div>
+                        ))}
+                        {statusDistribution.length === 0 && (
+                            <div className="text-center text-gray-400 text-sm py-2">
+                                No status data available
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ServiceRecord;
 use App\Models\Office;
 use App\Models\Position;
+use App\Models\Employee;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class ServiceRecordController extends Controller
@@ -89,7 +91,16 @@ class ServiceRecordController extends Controller
             'date_from' => $validated['date_from'],
             'date_to' => $validated['date_to'],
         ]);
-        
+
+        // Log activity
+        $employee = Employee::find($validated['employee_id']);
+        ActivityLog::create([
+            'action' => 'created',
+            'model_type' => 'ServiceRecord',
+            'model_id' => $serviceRecord->service_id,
+            'description' => "Service record added for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($serviceRecord->load(['position', 'employmentStatus', 'office']), 201);
     }
 
@@ -117,6 +128,7 @@ class ServiceRecordController extends Controller
         $positionId = $this->getOrCreatePosition($validated['position_id']);
 
         $serviceRecord = ServiceRecord::findOrFail($id);
+        $employee = Employee::find($validated['employee_id']);
         $serviceRecord->update([
             'employee_id' => $validated['employee_id'],
             'position_id' => $positionId,
@@ -125,13 +137,30 @@ class ServiceRecordController extends Controller
             'date_from' => $validated['date_from'],
             'date_to' => $validated['date_to'],
         ]);
+
+        ActivityLog::create([
+            'action' => 'updated',
+            'model_type' => 'ServiceRecord',
+            'model_id' => $serviceRecord->service_id,
+            'description' => "Service record updated for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($serviceRecord->load(['position', 'employmentStatus', 'office']));
     }
 
     public function destroy(string $id)
     {
         $serviceRecord = ServiceRecord::findOrFail($id);
+        $employee = Employee::find($serviceRecord->employee_id);
         $serviceRecord->delete();
+
+        ActivityLog::create([
+            'action' => 'deleted',
+            'model_type' => 'ServiceRecord',
+            'model_id' => $serviceRecord->service_id,
+            'description' => "Service record deleted for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json(null, 204);
     }
 }

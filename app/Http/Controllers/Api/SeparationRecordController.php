@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\SeparationRecord;
+use App\Models\ServiceRecord;
+use App\Models\Employee;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class SeparationRecordController extends Controller
@@ -28,6 +31,17 @@ class SeparationRecordController extends Controller
         ]);
 
         $separation = SeparationRecord::create($validated);
+
+        // Log activity
+        $serviceRecord = ServiceRecord::find($validated['service_id']);
+        $employee = Employee::find($serviceRecord->employee_id);
+        ActivityLog::create([
+            'action' => 'created',
+            'model_type' => 'SeparationRecord',
+            'model_id' => $separation->separation_id,
+            'description' => "Separation record ({$validated['cause']}) added for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($separation, 201);
     }
 
@@ -45,14 +59,34 @@ class SeparationRecordController extends Controller
         ]);
 
         $separation = SeparationRecord::findOrFail($id);
+        $serviceRecord = ServiceRecord::find($validated['service_id']);
+        $employee = Employee::find($serviceRecord->employee_id);
         $separation->update($validated);
+
+        ActivityLog::create([
+            'action' => 'updated',
+            'model_type' => 'SeparationRecord',
+            'model_id' => $separation->separation_id,
+            'description' => "Separation record updated for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($separation);
     }
 
     public function destroy(string $id)
     {
         $separation = SeparationRecord::findOrFail($id);
+        $serviceRecord = ServiceRecord::find($separation->service_id);
+        $employee = Employee::find($serviceRecord->employee_id);
         $separation->delete();
+
+        ActivityLog::create([
+            'action' => 'deleted',
+            'model_type' => 'SeparationRecord',
+            'model_id' => $separation->separation_id,
+            'description' => "Separation record deleted for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json(null, 204);
     }
 }

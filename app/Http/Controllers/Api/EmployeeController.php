@@ -40,7 +40,7 @@ class EmployeeController extends Controller
         }
 
         return $query->with(['serviceRecords' => function($query) {
-                $query->orderBy('date_from', 'desc');
+                $query->orderBy('date_from', 'desc')->limit(1);
             }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office'])
             ->withCount('serviceRecords')
             ->orderBy('surname')

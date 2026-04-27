@@ -42,3 +42,15 @@
 .text-dpwh-blue {
     color: #010066;
 }
+
+@keyframes shimmer {
+    0% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0.4;
+    }
+}

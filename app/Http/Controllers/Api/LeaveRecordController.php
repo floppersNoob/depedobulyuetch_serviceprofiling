@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaveRecord;
+use App\Models\ServiceRecord;
+use App\Models\Employee;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class LeaveRecordController extends Controller
@@ -29,6 +32,17 @@ class LeaveRecordController extends Controller
         ]);
 
         $leave = LeaveRecord::create($validated);
+
+        // Log activity
+        $serviceRecord = ServiceRecord::find($validated['service_id']);
+        $employee = Employee::find($serviceRecord->employee_id);
+        ActivityLog::create([
+            'action' => 'created',
+            'model_type' => 'LeaveRecord',
+            'model_id' => $leave->leave_id,
+            'description' => "Leave record ({$validated['leave_type']}) added for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($leave, 201);
     }
 
@@ -47,14 +61,34 @@ class LeaveRecordController extends Controller
         ]);
 
         $leave = LeaveRecord::findOrFail($id);
+        $serviceRecord = ServiceRecord::find($validated['service_id']);
+        $employee = Employee::find($serviceRecord->employee_id);
         $leave->update($validated);
+
+        ActivityLog::create([
+            'action' => 'updated',
+            'model_type' => 'LeaveRecord',
+            'model_id' => $leave->leave_id,
+            'description' => "Leave record updated for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json($leave);
     }
 
     public function destroy(string $id)
     {
         $leave = LeaveRecord::findOrFail($id);
+        $serviceRecord = ServiceRecord::find($leave->service_id);
+        $employee = Employee::find($serviceRecord->employee_id);
         $leave->delete();
+
+        ActivityLog::create([
+            'action' => 'deleted',
+            'model_type' => 'LeaveRecord',
+            'model_id' => $leave->leave_id,
+            'description' => "Leave record deleted for {$employee->surname}, {$employee->given_name}",
+        ]);
+
         return response()->json(null, 204);
     }
 }
