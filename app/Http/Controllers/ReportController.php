@@ -273,6 +273,8 @@ class ReportController extends Controller
                     if ($existingRecord->date_to != $recordData['date_to']) $hasChanges = true;
                     if ($existingRecord->status_id != ($employmentStatus ? $employmentStatus->status_id : null)) $hasChanges = true;
                     if ($existingRecord->office_id != ($office ? $office->office_id : null)) $hasChanges = true;
+                    if ($existingRecord->station_place != ($recordData['station'] ?? null)) $hasChanges = true;
+                    if ($existingRecord->branch != ($recordData['branch'] ?? null)) $hasChanges = true;
 
                     // Compare salary
                     if ($existingSalary) {
@@ -309,6 +311,8 @@ class ReportController extends Controller
                         'date_to' => $recordData['date_to'],
                         'status_id' => $employmentStatus ? $employmentStatus->status_id : null,
                         'office_id' => $office ? $office->office_id : null,
+                        'station_place' => $recordData['station'] ?? null,
+                        'branch' => $recordData['branch'] ?? null,
                     ]);
 
                     // Update salary history
@@ -371,6 +375,8 @@ class ReportController extends Controller
                         'office_id' => $office ? $office->office_id : null,
                         'date_from' => $recordData['date_from'],
                         'date_to' => $recordData['date_to'],
+                        'station_place' => $recordData['station'] ?? null,
+                        'branch' => $recordData['branch'] ?? null,
                     ]);
 
                     // Create salary history

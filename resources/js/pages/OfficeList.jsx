@@ -145,11 +145,11 @@ const OfficeList = () => {
                             />
                         </div>
                     </div>
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-between mt-4">
                         <button
                             type="button"
                             onClick={resetForm}
-                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                         >
                             Cancel
                         </button>

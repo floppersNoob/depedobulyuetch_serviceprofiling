@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import Alert from '../components/Alert.jsx';
 import ServiceRecordForm from './ServiceRecordForm.jsx';
 import ServiceRecordAddForm from './ServiceRecordAddForm.jsx';
@@ -104,7 +105,12 @@ const EmployeeShow = () => {
                 records: parsedRecords
             });
 
-            setAlert({ message: response.data.message, type: 'success' });
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: response.data.message,
+                confirmButtonColor: '#10b981'
+            });
             setIsImportModalOpen(false);
             setShowPreview(false);
             setParsedRecords([]);
@@ -181,67 +187,113 @@ const EmployeeShow = () => {
         return `${formatted}/${unitLabels[unit] || unit}`;
     };
 
-    if (loading) return <div className="text-center py-8">Loading...</div>;
-    if (!employee) return <div className="text-center py-8">Employee not found</div>;
-
-    return (
-        <div className="space-y-6">
-            <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
-
-            {/* Employee Info */}
-              <div className="flex justify-start">
-                <Link to="/employees" className="text-blue-600 hover:text-blue-800">
-                    &larr; Back to Employees
+    if (loading) return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                    <i className="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                </div>
+                <p className="text-gray-600 font-medium">Loading employee information...</p>
+            </div>
+        </div>
+    );
+    
+    if (!employee) return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+                    <i className="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <p className="text-gray-600 font-medium">Employee not found</p>
+                <Link to="/employees" className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-800">
+                    <i className="fas fa-arrow-left mr-2"></i>
+                    Back to Employees
                 </Link>
             </div>
-            
-            <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex justify-between items-start mb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800">
-                            {employee.surname}, {employee.given_name} {employee.middle_name}
-                        </h1>
-                        <p className="text-gray-600 mt-1">
-                            {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
-                            {employee.birth_place && ` in ${employee.birth_place}`}
-                        </p>
-                    </div>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={handlePrintPdf}
-                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
-                        >
-                            Print PDF
-                        </button>
-                        <Link
-                            to={`/employees/${id}/edit`}
-                            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 text-sm"
-                        >
-                            Edit
-                        </Link>
-                    </div>
-                </div>
-            </div>
+        </div>
+    );
 
-            {/* Service Records */}
-            <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold text-gray-800">Service Records</h2>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={openImportModal}
-                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                        >
-                            Import Excel
-                        </button>
-                        <button
-                            onClick={openAddModal}
-                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                        >
-                            Add Service Record
-                        </button>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {alert?.type === 'error' && <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />}
+
+                {/* Navigation Header */}
+                <div className="mb-8">
+                    <Link 
+                        to="/employees" 
+                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                    >
+                        <i className="fas fa-arrow-left mr-2"></i>
+                        Back to Employees
+                    </Link>
+                </div>
+                
+                {/* Employee Info Card */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-3xl font-bold text-white mb-2">
+                                    {employee.surname}, {employee.given_name} {employee.middle_name}
+                                </h1>
+                                <p className="text-blue-100">
+                                    {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
+                                    {employee.birth_place && ` in ${employee.birth_place}`}
+                                </p>
+                            </div>
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={handlePrintPdf}
+                                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all duration-200 border border-white/20"
+                                >
+                                    <i className="fas fa-file-pdf mr-2"></i>
+                                    Print PDF
+                                </button>
+                                <Link
+                                    to={`/employees/${id}/edit`}
+                                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all duration-200 border border-white/20"
+                                >
+                                    <i className="fas fa-edit mr-2"></i>
+                                    Edit
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+            {/* Service Records Section */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg">
+                                    <i className="fas fa-briefcase"></i>
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Service Records</h2>
+                                    <p className="text-sm text-gray-500">Employment history and timeline</p>
+                                </div>
+                            </div>
+                            <div className="flex space-x-3">
+                                <button
+                                    onClick={openImportModal}
+                                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                                >
+                                    <i className="fas fa-file-excel mr-2"></i>
+                                    Import Excel
+                                </button>
+                                <button
+                                    onClick={openAddModal}
+                                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                                >
+                                    <i className="fas fa-plus mr-2"></i>
+                                    Add Service Record
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-6">
 
                 {/* View Toggle */}
                 <ViewToggle 
@@ -345,127 +397,192 @@ const EmployeeShow = () => {
                     </div>
                 )}
             </div>
+            </div>
 
             
             {/* Import Excel Modal */}
             {isImportModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
                     <div
-                        className="absolute inset-0 bg-gray-300/25 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         onClick={closeImportModal}
                     ></div>
-                    <div className="relative bg-white rounded-lg shadow-[0_0_50px_rgba(0,0,0,0.3)] max-w-6xl w-full z-10 max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-800">
-                                {showPreview ? 'Review Service Records' : 'Import Service Records'}
-                            </h2>
-                            <button
-                                onClick={closeImportModal}
-                                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
-                            >
-                                ×
-                            </button>
-                        </div>
-                        <div className="p-6">
-                            {!showPreview ? (
-                                <>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Upload an Excel file with service record data. The Excel format should match the service record template.
-                                    </p>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Excel File (.xlsx, .xls)</label>
-                                        <input
-                                            type="file"
-                                            accept=".xlsx,.xls"
-                                            onChange={handleFileChange}
-                                            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        />
+                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-5xl w-full z-10 transform transition-all duration-300 scale-100">
+                        {!showPreview ? (
+                            <>
+                                <div className="p-8">
+                                    <div className="text-center mb-8">
+                                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mb-4 shadow-lg">
+                                            <i className="fas fa-file-excel text-white text-2xl"></i>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Service Records</h2>
+                                        <p className="text-gray-600">Upload your Excel file to add service records</p>
                                     </div>
-                                    <div className="flex justify-end space-x-3">
+                                    
+                                    <div className="space-y-6">
+                                        <div className="relative">
+                                            <input
+                                                type="file"
+                                                accept=".xlsx,.xls"
+                                                onChange={handleFileChange}
+                                                className="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 cursor-pointer bg-gray-50 hover:bg-gray-100 text-transparent"
+                                            />
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                                <i className="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                                <p className="text-gray-600 font-medium">Drop Excel file here</p>
+                                                <p className="text-sm text-gray-500">or click to browse</p>
+                                            </div>
+                                        </div>
+                                        
+                                        {importFile && (
+                                            <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                                                <div className="flex-shrink-0">
+                                                    <i className="fas fa-file-excel text-emerald-600 text-lg"></i>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-emerald-900 truncate">{importFile.name}</p>
+                                                    <p className="text-xs text-emerald-700">Ready to parse</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setImportFile(null)}
+                                                    className="flex-shrink-0 text-emerald-600 hover:text-emerald-800 transition-colors"
+                                                >
+                                                    <i className="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        )}
+                                        
+                                        <div className="bg-gray-50 rounded-xl p-4">
+                                            <h3 className="text-sm font-semibold text-gray-700 mb-2">File Requirements</h3>
+                                            <ul className="text-xs text-gray-600 space-y-1">
+                                                <li className="flex items-center gap-2">
+                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
+                                                    Excel format (.xlsx, .xls)
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
+                                                    Include service record columns
+                                                </li>
+                                                <li className="flex items-center gap-2">
+                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
+                                                    Valid date formats
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between pt-4 border-t border-gray-200/50">
                                         <button
                                             type="button"
                                             onClick={closeImportModal}
-                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                            className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             onClick={handleParseExcel}
                                             disabled={importing || !importFile}
-                                            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
                                         >
-                                            {importing ? 'Parsing...' : 'Parse Excel'}
+                                            {importing ? (
+                                                <span className="flex items-center gap-2">
+                                                    <i className="fas fa-spinner fa-spin"></i>
+                                                    Parsing...
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <i className="fas fa-file-excel"></i>
+                                                    Parse Excel
+                                                </span>
+                                            )}
                                         </button>
                                     </div>
-                                </>
+                                </div>
+                            </>
                             ) : (
-                                <>
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        Found {parsedRecords.length} service record(s). Review the parsed data below before confirming the import.
-                                    </p>
-                                    <div className="mb-4 border border-gray-200 rounded">
-                                        <table className="w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
+                            <div className="p-8">
+                                <div className="flex items-start mb-6">
+                                    <button
+                                        type="button"
+                                        onClick={handleBackToUpload}
+                                        className="px-4 py-2 rounded-xl bg-gray-600 text-white font-medium hover:bg-gray-700 transition-all duration-200 text-sm"
+                                    >
+                                        <i className="fas fa-arrow-left mr-2"></i>
+                                        Back
+                                    </button>
+                                    <div className="text-center flex-1">
+                                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mb-4 shadow-lg">
+                                            <i className="fas fa-check text-white text-2xl"></i>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Review Records</h2>
+                                        <p className="text-gray-600">
+                                            Found <strong>{parsedRecords.length}</strong> service record{parsedRecords.length !== 1 ? 's' : ''} to import
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div className="bg-gray-50 rounded-2xl mb-6 overflow-hidden">
+                                    <div className="max-h-80 overflow-y-auto">
+                                        <table className="w-full text-sm">
+                                            <thead className="bg-emerald-600 text-white sticky top-0 z-30">
                                                 <tr>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salary</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station/Place</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leave w/o Pay</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Date</th>
-                                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Cause</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">FROM</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">TO</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">DESIGNATION</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">STATUS</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SALARY</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">STATION</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SEP. DATE</th>
+                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SEP. CAUSE</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {parsedRecords.map((record, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                                            {formatDate(record.date_from)}
-                                                            {record.date_to && ` - ${formatDate(record.date_to)}`}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-sm">{record.designation || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm">{record.status || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm">
-                                                            {formatSalary(record.salary, record.salary_unit)}
-                                                        </td>
-                                                        <td className="px-4 py-3 text-sm">{record.station || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm">{record.branch || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm">{record.leave || '-'}</td>
-                                                        <td className="px-4 py-3 text-sm">{formatDate(record.separation_date)}</td>
-                                                        <td className="px-4 py-3 text-sm">{record.separation_cause || '-'}</td>
+                                            <tbody className="divide-y divide-gray-200 bg-white">
+                                                {[...parsedRecords].sort((a, b) => new Date(b.date_from) - new Date(a.date_from)).map((record, index) => (
+                                                    <tr key={index} className="hover:bg-gray-50">
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{formatDate(record.date_from)}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.date_to ? formatDate(record.date_to) : 'Present'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.designation || '-'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.status || '-'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.salary ? record.salary.toLocaleString() : '-'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.station || '-'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.separation_date ? formatDate(record.separation_date) : '-'}</td>
+                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.separation_cause || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="flex justify-end space-x-3">
-                                        <button
-                                            type="button"
-                                            onClick={handleBackToUpload}
-                                            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                        >
-                                            Back
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={closeImportModal}
-                                            className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
-                                        >
-                                            Cancel
-                                        </button>
+                                </div>
+                                
+                                <div className="flex justify-between pt-4 border-t border-gray-200/50">
+                                    <button
+                                        type="button"
+                                        onClick={closeImportModal}
+                                        className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <div className="flex space-x-3">
                                         <button
                                             onClick={handleConfirmImport}
                                             disabled={importing}
-                                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+                                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
                                         >
-                                            {importing ? 'Importing...' : 'Confirm Import'}
+                                            {importing ? (
+                                                <span className="flex items-center gap-2">
+                                                    <i className="fas fa-spinner fa-spin"></i>
+                                                    Importing...
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <i className="fas fa-check"></i>
+                                                    Confirm Import
+                                                </span>
+                                            )}
                                         </button>
                                     </div>
-                                </>
-                            )}
-                        </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -488,6 +605,8 @@ const EmployeeShow = () => {
                 />
             )}
         </div>
+    </div>
+    
     );
 };
 

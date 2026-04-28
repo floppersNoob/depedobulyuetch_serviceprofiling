@@ -139,11 +139,11 @@ const EmployeeForm = () => {
                     </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 mt-6">
+                <div className="flex justify-between mt-6">
                     <button
                         type="button"
                         onClick={() => navigate('/employees')}
-                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                     >
                         Cancel
                     </button>

@@ -490,11 +490,11 @@ const Dashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200/50">
+                            <div className="flex justify-between pt-4 border-t border-gray-200/50">
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-6 py-2.5 rounded-xl text-gray-700 font-medium hover:bg-gray-100 transition-all duration-200"
+                                    className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
                                 >
                                     Cancel
                                 </button>

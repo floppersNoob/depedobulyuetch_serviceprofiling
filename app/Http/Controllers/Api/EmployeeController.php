@@ -72,7 +72,7 @@ class EmployeeController extends Controller
     public function show(string $id)
     {
         $employee = Employee::with(['serviceRecords' => function($query) {
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('date_from', 'asc');
             }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office', 'serviceRecords.salaryHistories', 'serviceRecords.leaveRecords', 'serviceRecords.separationRecord'])
             ->findOrFail($id);
         return response()->json($employee);
