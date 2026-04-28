@@ -24,6 +24,11 @@ class LeaveRecordController extends Controller
 
     public function store(Request $request)
     {
+        // Normalize empty strings to null for date fields
+        if ($request->has('date_to') && $request->input('date_to') === '') {
+            $request->merge(['date_to' => null]);
+        }
+
         $validated = $request->validate([
             'service_id' => 'required|exists:service_records,service_id',
             'leave_type' => 'required|string|max:255',
@@ -53,6 +58,11 @@ class LeaveRecordController extends Controller
 
     public function update(Request $request, string $id)
     {
+        // Normalize empty strings to null for date fields
+        if ($request->has('date_to') && $request->input('date_to') === '') {
+            $request->merge(['date_to' => null]);
+        }
+
         $validated = $request->validate([
             'service_id' => 'required|exists:service_records,service_id',
             'leave_type' => 'nullable|string|max:255',

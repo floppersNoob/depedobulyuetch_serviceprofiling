@@ -57,6 +57,11 @@ class ServiceRecordController extends Controller
 
     public function store(Request $request)
     {
+        // Normalize empty strings to null for date fields
+        if ($request->has('date_to') && $request->input('date_to') === '') {
+            $request->merge(['date_to' => null]);
+        }
+
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,employee_id',
             'position_id' => 'required|string|max:255',
@@ -113,6 +118,11 @@ class ServiceRecordController extends Controller
 
     public function update(Request $request, string $id)
     {
+        // Normalize empty strings to null for date fields
+        if ($request->has('date_to') && $request->input('date_to') === '') {
+            $request->merge(['date_to' => null]);
+        }
+
         $validated = $request->validate([
             'employee_id' => 'required|exists:employees,employee_id',
             'position_id' => 'required|string|max:255',

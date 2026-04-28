@@ -11,7 +11,15 @@ class OfficeController extends Controller
 {
     public function index()
     {
-        return Office::orderBy('department')->get();
+        // Only return offices that are currently in use (from present service records)
+        $usedOfficeIds = \App\Models\ServiceRecord::whereNull('date_to')
+            ->distinct()
+            ->pluck('office_id')
+            ->toArray();
+
+        return Office::whereIn('office_id', $usedOfficeIds)
+            ->orderBy('department')
+            ->get();
     }
 
     public function store(Request $request)

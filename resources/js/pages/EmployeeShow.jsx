@@ -4,6 +4,8 @@ import axios from 'axios';
 import Alert from '../components/Alert.jsx';
 import ServiceRecordForm from './ServiceRecordForm.jsx';
 import ServiceRecordAddForm from './ServiceRecordAddForm.jsx';
+import EmploymentTimeline from '../components/EmploymentTimeline.jsx';
+import ViewToggle from '../components/ViewToggle.jsx';
 
 const EmployeeShow = () => {
     const { id } = useParams();
@@ -18,6 +20,7 @@ const EmployeeShow = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingServiceRecordId, setEditingServiceRecordId] = useState(null);
+    const [viewMode, setViewMode] = useState('table'); // 'table' or 'timeline'
 
     useEffect(() => {
         fetchEmployee();
@@ -47,6 +50,22 @@ const EmployeeShow = () => {
 
     const handlePrintPdf = () => {
         window.open(`/reports/service-record/${id}/pdf`, '_blank');
+    };
+
+    const handlePrint = () => {
+        if (viewMode === 'table') {
+            window.print();
+        } else {
+            // For timeline view, create a print-friendly version
+            const printContent = document.getElementById('employment-timeline');
+            if (printContent) {
+                const originalContent = document.body.innerHTML;
+                document.body.innerHTML = printContent.innerHTML;
+                window.print();
+                document.body.innerHTML = originalContent;
+                window.location.reload();
+            }
+        }
     };
 
     const handleFileChange = (e) => {
@@ -224,6 +243,13 @@ const EmployeeShow = () => {
                     </div>
                 </div>
 
+                {/* View Toggle */}
+                <ViewToggle 
+                    currentView={viewMode}
+                    onViewChange={setViewMode}
+                    onPrint={handlePrint}
+                />
+
                 {!employee.service_records || employee.service_records.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">
                         No service records found.{' '}
@@ -232,86 +258,95 @@ const EmployeeShow = () => {
                         </button>
                     </p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salary</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station/Place</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leave w/o Pay</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Date</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Cause</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {employee.service_records.map((record) => (
-                                    <tr key={record.service_id}>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                            {formatDate(record.date_from)}
-                                            {record.date_to
-                                                ? ` - ${formatDate(record.date_to)}`
-                                                : ' - Present'
-                                            }
-                                        </td>
-                                        <td className="px-4 py-3 text-sm">
-                                            {record.position?.position_name || '-'}
-                                        </td>
+                    <div>
+                        {viewMode === 'table' ? (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salary</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station/Place</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leave w/o Pay</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Date</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Cause</th>
+                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {employee.service_records.map((record) => (
+                                            <tr key={record.service_id}>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                    {formatDate(record.date_from)}
+                                                    {record.date_to
+                                                        ? ` - ${formatDate(record.date_to)}`
+                                                        : ' - Present'
+                                                    }
+                                                </td>
+                                                <td className="px-4 py-3 text-sm">
+                                                    {record.position?.position_name || '-'}
+                                                </td>
 
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                            {record.employment_status?.status_name || '-'}
-                                        </td>
-                                        
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                            {record.salary_histories && record.salary_histories.length > 0
-                                                ? formatSalary(record.salary_histories[0].amount, record.salary_histories[0].rate_unit)
-                                                : '-'
-                                            }
-                                        </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                    {record.employment_status?.status_name || '-'}
+                                                </td>
+                                                
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                    {record.salary_histories && record.salary_histories.length > 0
+                                                        ? formatSalary(record.salary_histories[0].amount, record.salary_histories[0].rate_unit)
+                                                        : '-'
+                                                    }
+                                                </td>
 
-                                        <td className="px-4 py-3 text-sm">
-                                            {record.office?.department || '-'}
-                                        </td>
+                                                <td className="px-4 py-3 text-sm">
+                                                    {record.office?.department || '-'}
+                                                </td>
 
-                                        <td className="px-4 py-3 text-sm">{record.office?.branch || '-'}</td>
+                                                <td className="px-4 py-3 text-sm">{record.office?.branch || '-'}</td>
 
-                                        <td className="px-4 py-3 text-sm">
-                                            {record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}
-                                        </td>
+                                                <td className="px-4 py-3 text-sm">
+                                                    {record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}
+                                                </td>
 
-                                        <td className="px-4 py-3 text-sm">
-                                            {formatDate(record.separation_record?.separation_date)}
-                                        </td>
+                                                <td className="px-4 py-3 text-sm">
+                                                    {formatDate(record.separation_record?.separation_date)}
+                                                </td>
 
-                                        <td className="px-4 py-3 text-sm">
-                                            {record.separation_record?.cause || '-'}
-                                        </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
-                                            <button
-                                                onClick={() => openEditModal(record.service_id)}
-                                                className="text-yellow-600 hover:text-yellow-900"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteServiceRecord(record.service_id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                                <td className="px-4 py-3 text-sm">
+                                                    {record.separation_record?.cause || '-'}
+                                                </td>
+                                                <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
+                                                    <button
+                                                        onClick={() => openEditModal(record.service_id)}
+                                                        className="text-yellow-600 hover:text-yellow-900"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteServiceRecord(record.service_id)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div id="employment-timeline">
+                                <EmploymentTimeline serviceRecords={employee.service_records} />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
+            
             {/* Import Excel Modal */}
             {isImportModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">

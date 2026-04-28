@@ -69,8 +69,14 @@ const ServiceRecordAddForm = ({ isOpen, onClose, employeeId }) => {
         setErrors({});
 
         try {
+            // Prepare data: convert empty date_to to null for backend validation
+            const submitData = {
+                ...formData,
+                date_to: formData.date_to || null
+            };
+
             // Create service record
-            const response = await axios.post('/api/service-records', formData);
+            const response = await axios.post('/api/service-records', submitData);
             const serviceRecordId = response.data.service_id;
 
             // Save salary history
@@ -89,9 +95,13 @@ const ServiceRecordAddForm = ({ isOpen, onClose, employeeId }) => {
 
             // Create leave record if provided
             if (leaveData.leave_type && leaveData.date_from) {
+                const leaveSubmitData = {
+                    ...leaveData,
+                    date_to: leaveData.date_to || null
+                };
                 await axios.post('/api/leave-records', {
                     service_id: serviceRecordId,
-                    ...leaveData
+                    ...leaveSubmitData
                 });
             }
 

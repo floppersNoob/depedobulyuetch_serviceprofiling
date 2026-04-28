@@ -3,6 +3,14 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import Alert from '../components/Alert.jsx';
 
+// Helper to format date to YYYY-MM-DD for date inputs
+const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    return date.toISOString().split('T')[0];
+};
+
 const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecordId, employeeId: propEmployeeId }) => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -107,13 +115,13 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
             const record = response.data;
             setFormData({
                 employee_id: record.employee_id,
-                position_id: record.position_id,
+                position_id: record.position?.position_name || '',
                 status_id: record.status_id,
                 office_id: record.office_id,
                 station_place: record.office?.station_place || record.office?.department || '',
                 branch: record.office?.branch || '',
-                date_from: record.date_from,
-                date_to: record.date_to || ''
+                date_from: formatDateForInput(record.date_from),
+                date_to: formatDateForInput(record.date_to)
             });
             // Load existing salary if any
             if (record.salary_histories && record.salary_histories.length > 0) {
@@ -124,12 +132,16 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
             // Load leave if any
             if (record.leave_records && record.leave_records.length > 0) {
                 const leave = record.leave_records[0];
-                setLeaveData({ leave_type: leave.leave_type, date_from: leave.date_from, date_to: leave.date_to || '' });
+                setLeaveData({
+                    leave_type: leave.leave_type,
+                    date_from: formatDateForInput(leave.date_from),
+                    date_to: formatDateForInput(leave.date_to)
+                });
             }
             // Load separation if any
             if (record.separation_record) {
                 setSeparationData({
-                    separation_date: record.separation_record.separation_date,
+                    separation_date: formatDateForInput(record.separation_record.separation_date),
                     cause: record.separation_record.cause
                 });
             }
@@ -157,11 +169,17 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
         try {
             let recordId = serviceRecordId;
 
+            // Prepare data: convert empty date_to to null for backend validation
+            const submitData = {
+                ...formData,
+                date_to: formData.date_to || null
+            };
+
             // Create/update service record
             if (isEdit) {
-                await axios.put(`/api/service-records/${serviceRecordId}`, formData);
+                await axios.put(`/api/service-records/${serviceRecordId}`, submitData);
             } else {
-                const response = await axios.post('/api/service-records', formData);
+                const response = await axios.post('/api/service-records', submitData);
                 recordId = response.data.service_id;
             }
 
@@ -186,16 +204,21 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 const leaveRecords = existingLeave.data.leave_records || [];
 
                 if (leaveData.leave_type && leaveData.date_from) {
+                    // Normalize leave data: convert empty date_to to null
+                    const leaveSubmitData = {
+                        ...leaveData,
+                        date_to: leaveData.date_to || null
+                    };
                     // Update or create leave record
                     if (leaveRecords.length > 0) {
                         await axios.put(`/api/leave-records/${leaveRecords[0].leave_id}`, {
                             service_id: recordId,
-                            ...leaveData
+                            ...leaveSubmitData
                         });
                     } else {
                         await axios.post('/api/leave-records', {
                             service_id: recordId,
-                            ...leaveData
+                            ...leaveSubmitData
                         });
                     }
                 } else if (leaveRecords.length > 0) {
@@ -205,9 +228,13 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
             } else {
                 // Create new leave record if provided
                 if (leaveData.leave_type && leaveData.date_from) {
+                    const leaveSubmitData = {
+                        ...leaveData,
+                        date_to: leaveData.date_to || null
+                    };
                     await axios.post('/api/leave-records', {
                         service_id: recordId,
-                        ...leaveData
+                        ...leaveSubmitData
                     });
                 }
             }

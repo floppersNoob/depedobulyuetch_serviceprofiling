@@ -11,7 +11,15 @@ class PositionController extends Controller
 {
     public function index()
     {
-        return Position::orderBy('position_name')->get();
+        // Only return positions that are currently in use (from present service records)
+        $usedPositionIds = \App\Models\ServiceRecord::whereNull('date_to')
+            ->distinct()
+            ->pluck('position_id')
+            ->toArray();
+
+        return Position::whereIn('position_id', $usedPositionIds)
+            ->orderBy('position_name')
+            ->get();
     }
 
     public function store(Request $request)

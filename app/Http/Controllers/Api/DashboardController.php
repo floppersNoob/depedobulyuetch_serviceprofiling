@@ -46,22 +46,11 @@ class DashboardController extends Controller
 
     public function statusDistribution()
     {
-        $currentYear = date('Y');
-
-        // Get latest service record for each employee with their status
+        // Get current/present service records only (date_to is null) and count by status
         $statusCounts = \DB::table('service_records as sr')
             ->select('es.status_name', \DB::raw('COUNT(DISTINCT sr.employee_id) as count'))
             ->join('employment_status as es', 'sr.status_id', '=', 'es.status_id')
-            ->whereYear('sr.date_from', '<=', $currentYear)
-            ->where(function ($query) use ($currentYear) {
-                $query->whereNull('sr.date_to')
-                      ->orWhereYear('sr.date_to', '>=', $currentYear);
-            })
-            ->whereIn('sr.service_id', function ($query) {
-                $query->select(\DB::raw('MAX(service_id)'))
-                    ->from('service_records')
-                    ->groupBy('employee_id');
-            })
+            ->whereNull('sr.date_to')  // Only current/present records
             ->groupBy('es.status_name')
             ->get();
 

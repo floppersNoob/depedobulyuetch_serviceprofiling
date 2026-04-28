@@ -4,14 +4,25 @@ import axios from 'axios';
 import Pagination from '../components/Pagination.jsx';
 import { useToast } from '../components/Toast.jsx';
 
+// Module-level cache for employee list data
+const employeesCache = {
+    data: null,
+    timestamp: 0,
+    search: '',
+    page: 1
+};
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 const EmployeeList = () => {
     const [employees, setEmployees] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [search, setSearch] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [showSkeleton, setShowSkeleton] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [showSkeleton, setShowSkeleton] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const isInitialLoad = useRef(true);
     const loadingTimeoutRef = useRef(null);
+    const minLoadTimeRef = useRef(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState({
         surname: '',
@@ -36,8 +47,25 @@ const EmployeeList = () => {
     const [statuses, setStatuses] = useState([]);
 
     useEffect(() => {
-        fetchEmployees();
+        const cached = employeesCache.data;
+        const isCacheValid = cached && (Date.now() - employeesCache.timestamp < CACHE_DURATION) && employeesCache.search === '';
+
+        if (isCacheValid) {
+            // Show cached data immediately
+            setEmployees(cached.employees);
+            setPagination(cached.pagination);
+            setLoading(false);
+            setShowSkeleton(false);
+            // Refresh in background
+            fetchEmployees(1, '', true);
+        } else {
+            // No cache - show skeleton for minimum 2 seconds
+            minLoadTimeRef.current = Date.now();
+            fetchEmployees(1, '', false);
+        }
+
         fetchFilterData();
+
         return () => {
             if (loadingTimeoutRef.current) {
                 clearTimeout(loadingTimeoutRef.current);
@@ -47,33 +75,59 @@ const EmployeeList = () => {
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
-            fetchEmployees(1, search);
+            // Skip cache for search - always fetch fresh
+            minLoadTimeRef.current = Date.now();
+            fetchEmployees(1, search, false);
         }, 400);
 
         return () => clearTimeout(delayDebounce);
     }, [search]);
 
-    const fetchEmployees = async (page = 1, searchTerm = '') => {
-        setLoading(true);
-        loadingTimeoutRef.current = setTimeout(() => {
+    const fetchEmployees = async (page = 1, searchTerm = '', backgroundRefresh = false) => {
+        if (!backgroundRefresh) {
+            setLoading(true);
             setShowSkeleton(true);
-        }, 300);
+        } else {
+            setIsRefreshing(true);
+        }
 
         try {
             const params = { page, search: searchTerm };
             const response = await axios.get('/api/employees', { params });
             const employeeData = response.data.data || response.data || [];
+
+            // Update state
             setEmployees(employeeData);
             setPagination(response.data);
+
+            // Update cache only for non-search fetches
+            if (searchTerm === '') {
+                employeesCache.data = {
+                    employees: employeeData,
+                    pagination: response.data
+                };
+                employeesCache.timestamp = Date.now();
+                employeesCache.search = searchTerm;
+                employeesCache.page = page;
+            }
         } catch (error) {
             console.error('Fetch error:', error);
-            addToast('Failed to load employees', 'error');
-        } finally {
-            if (loadingTimeoutRef.current) {
-                clearTimeout(loadingTimeoutRef.current);
+            if (!backgroundRefresh) {
+                addToast('Failed to load employees', 'error');
             }
-            setLoading(false);
-            setShowSkeleton(false);
+        } finally {
+            if (!backgroundRefresh) {
+                // Ensure minimum 2 second skeleton display
+                const elapsed = Date.now() - (minLoadTimeRef.current || Date.now());
+                const remaining = Math.max(0, 2000 - elapsed);
+
+                setTimeout(() => {
+                    setLoading(false);
+                    setShowSkeleton(false);
+                }, remaining);
+            } else {
+                setIsRefreshing(false);
+            }
         }
         isInitialLoad.current = false;
     };
@@ -167,7 +221,10 @@ const EmployeeList = () => {
         try {
             await axios.delete(`/api/employees/${id}`);
             addToast('Employee deleted successfully', 'success');
-            fetchEmployees();
+            // Clear cache to force fresh data
+            employeesCache.data = null;
+            employeesCache.timestamp = 0;
+            fetchEmployees(1, search, false);
         } catch (error) {
             addToast('Failed to delete employee', 'error');
         }
@@ -204,7 +261,10 @@ const EmployeeList = () => {
             await axios.post('/api/employees', formData);
             addToast('Employee created successfully', 'success');
             closeModal();
-            fetchEmployees();
+            // Clear cache to force fresh data
+            employeesCache.data = null;
+            employeesCache.timestamp = 0;
+            fetchEmployees(1, search, false);
         } catch (error) {
             if (error.response?.data?.errors) {
                 setFormErrors(error.response.data.errors);
@@ -215,20 +275,36 @@ const EmployeeList = () => {
         setFormLoading(false);
     };
 
-    if (showSkeleton) {
+    // Only show skeleton if loading AND no cached employees to display
+    if (showSkeleton && employees.length === 0) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                    <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-                        <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="h-8 bg-gray-200 rounded w-32 animate-shimmer"></div>
+                    <div className="h-10 bg-gray-200 rounded w-32 animate-shimmer"></div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="h-10 bg-gray-200 rounded animate-shimmer" style={{animationDelay: `${i * 100}ms`}}></div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                        <div key={i} className="bg-white rounded-xl shadow p-6" style={{animationDelay: `${i * 100}ms`}}>
+                            <div className="flex items-center space-x-4">
+                                <div className="w-14 h-14 bg-gray-200 rounded-full animate-shimmer"></div>
+                                <div className="flex-1">
+                                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2 animate-shimmer"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-1/2 animate-shimmer"></div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 mt-4">
+                                <div className="h-12 bg-gray-200 rounded animate-shimmer"></div>
+                                <div className="h-12 bg-gray-200 rounded animate-shimmer"></div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         );
     }
@@ -237,7 +313,14 @@ const EmployeeList = () => {
         <div className="space-y-6">
 
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-dpwh-blue">Employees</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-dpwh-blue">Employees</h1>
+                    {isRefreshing && (
+                        <span className="text-xs text-gray-500 animate-pulse">
+                            <i className="fas fa-sync-alt fa-spin mr-1"></i>Updating...
+                        </span>
+                    )}
+                </div>
                 <button
                     onClick={openModal}
                     className="glass-card text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 hover:shadow-md hover:scale-105 font-medium transition-all duration-300"
@@ -247,57 +330,49 @@ const EmployeeList = () => {
             </div>
 
             {/* Search and Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
-                 <select
-                    value={filters.yearsOfService}
-                    onChange={(e) => setFilters({...filters, yearsOfService: e.target.value})}
-                    className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                >
-                    <option value="">All Years of Service</option>
-                    <option value="0-5">0-5 years</option>
-                    <option value="5-10">5-10 years</option>
-                    <option value="10+">10+ years</option>
-                </select>
-                
-                <select
-                    value={filters.office}
-                    onChange={(e) => setFilters({...filters, office: e.target.value})}
-                    className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                >
-                    <option value="">All Offices</option>
-                    {offices.map(office => (
-                        <option key={office.office_id} value={office.office_id}>
-                            {office.department} {office.branch && `(${office.branch})`}
-                        </option>
-                    ))}
-                </select>
-                <select
-                    value={filters.position}
-                    onChange={(e) => setFilters({...filters, position: e.target.value})}
-                    className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                >
-                    <option value="">All Designations</option>
-                    {positions.map(position => (
-                        <option key={position.position_id} value={position.position_id}>
-                            {position.position_name}
-                        </option>
-                    ))}
-                </select>
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
+                {/* Filter Dropdowns - Left Side */}
+                <div className="flex flex-wrap gap-3">
+                    <select
+                        value={filters.office}
+                        onChange={(e) => setFilters({...filters, office: e.target.value})}
+                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
+                    >
+                        <option value="">All Offices</option>
+                        {offices.map(office => (
+                            <option key={office.office_id} value={office.office_id}>
+                                {office.department} {office.branch && `(${office.branch})`}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={filters.position}
+                        onChange={(e) => setFilters({...filters, position: e.target.value})}
+                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
+                    >
+                        <option value="">All Designations</option>
+                        {positions.map(position => (
+                            <option key={position.position_id} value={position.position_id}>
+                                {position.position_name}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={filters.status}
+                        onChange={(e) => setFilters({...filters, status: e.target.value})}
+                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
+                    >
+                        <option value="">All Status</option>
+                        {statuses.map(status => (
+                            <option key={status.status_id} value={status.status_id}>
+                                {status.status_name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-                <select
-                    value={filters.status}
-                    onChange={(e) => setFilters({...filters, status: e.target.value})}
-                    className="glass-card w-32 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                >
-                    <option value="">All Status</option>
-                    {statuses.map(status => (
-                        <option key={status.status_id} value={status.status_id}>
-                            {status.status_name}
-                        </option>
-                    ))}
-                </select>
-
-                 <div className="flex">
+                {/* Search and Reset - Right Side */}
+                <div className="flex items-center gap-3 md:ml-auto">
                     <input
                         type="text"
                         value={search}
@@ -305,16 +380,16 @@ const EmployeeList = () => {
                         placeholder="Search..."
                         className="glass-card w-64 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue placeholder-gray-500"
                     />
+                    <button
+                        onClick={() => {
+                            setSearch('');
+                            setFilters({ office: '', position: '', status: '', yearsOfService: '' });
+                        }}
+                        className="glass-card text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 hover:text-[#eb3505] hover:shadow-md font-medium transition-all duration-300 whitespace-nowrap"
+                    >
+                        Reset Filters
+                    </button>
                 </div>
-                <button
-                    onClick={() => {
-                        setSearch('');
-                        setFilters({ office: '', position: '', status: '', yearsOfService: '' });
-                    }}
-                    className="glass-card text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 hover:text-[#eb3505] hover:shadow-md font-medium transition-all duration-300"
-                >
-                    Reset Filters
-                </button>
             </div>
 
             {/* Modern Card Grid */}
