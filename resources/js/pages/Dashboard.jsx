@@ -26,16 +26,6 @@ const Dashboard = () => {
     const [showSkeleton, setShowSkeleton] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const minLoadTimeRef = useRef(null);
-    const { addToast } = useToast();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        surname: '',
-        given_name: '',
-        middle_name: '',
-        birth_date: '',
-        birth_place: ''
-    });
-    const [formErrors, setFormErrors] = useState({});
     const [formLoading, setFormLoading] = useState(false);
 
     useEffect(() => {
@@ -117,51 +107,6 @@ const Dashboard = () => {
         if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
         if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
         return `${Math.floor(seconds / 86400)} days ago`;
-    };
-
-    const openModal = () => {
-        setFormData({
-            surname: '',
-            given_name: '',
-            middle_name: '',
-            birth_date: '',
-            birth_place: ''
-        });
-        setFormErrors({});
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setFormErrors({});
-    };
-
-    const handleFormChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        setFormErrors({ ...formErrors, [e.target.name]: null });
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        setFormErrors({});
-        setFormLoading(true);
-
-        try {
-            await axios.post('/api/employees', formData);
-            addToast('Employee created successfully', 'success');
-            closeModal();
-            // Clear cache to force fresh data on next dashboard visit
-            dashboardCache.data = null;
-            dashboardCache.timestamp = 0;
-            fetchStats(false);
-        } catch (error) {
-            if (error.response?.data?.errors) {
-                setFormErrors(error.response.data.errors);
-            } else {
-                addToast('Failed to create employee', 'error');
-            }
-        }
-        setFormLoading(false);
     };
 
     const statCards = [
@@ -256,20 +201,12 @@ const Dashboard = () => {
                     <h1 className="text-xl font-bold">Welcome to DPWH Service Record System</h1>
                     <p className="text-gray-600 text-sm">Manage employee service records efficiently and generate reports instantly.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    {isRefreshing && (
-                        <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <i className="fas fa-sync fa-spin"></i>
-                            Updating...
-                        </span>
-                    )}
-                    <button
-                        onClick={openModal}
-                        className="bg-[#eb3505] text-white px-4 py-2 rounded-lg hover:bg-[#c92d04] transition-colors font-medium"
-                    >
-                        + Add Employee
-                    </button>
-                </div>
+                {isRefreshing && (
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                        <i className="fas fa-sync fa-spin"></i>
+                        Updating...
+                    </span>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -395,131 +332,6 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Add Employee Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
-                    <div
-                        className="absolute inset-0 bg-gray-900/30 backdrop-blur-md transition-opacity duration-300"
-                        onClick={closeModal}
-                    ></div>
-
-                    <div className="relative glass-card rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] max-w-2xl w-full z-10 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200/50">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg">
-                                    <i className="fas fa-user-plus"></i>
-                                </div>
-                                <h2 className="text-xl font-bold text-gray-800">Add New Employee</h2>
-                            </div>
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
-                            >
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleFormSubmit} className="p-6 space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Surname *</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="surname"
-                                            value={formData.surname}
-                                            onChange={handleFormChange}
-                                            required
-                                            placeholder="Enter surname"
-                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                        />
-                                        {formErrors.surname && <p className="text-red-500 text-sm mt-1">{formErrors.surname[0]}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Given Name *</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="given_name"
-                                            value={formData.given_name}
-                                            onChange={handleFormChange}
-                                            required
-                                            placeholder="Enter given name"
-                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                        />
-                                        {formErrors.given_name && <p className="text-red-500 text-sm mt-1">{formErrors.given_name[0]}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Middle Name</label>
-                                    <input
-                                        type="text"
-                                        name="middle_name"
-                                        value={formData.middle_name}
-                                        onChange={handleFormChange}
-                                        placeholder="Enter middle name"
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Birth Date</label>
-                                    <input
-                                        type="date"
-                                        name="birth_date"
-                                        value={formData.birth_date}
-                                        onChange={handleFormChange}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Birth Place</label>
-                                    <input
-                                        type="text"
-                                        name="birth_place"
-                                        value={formData.birth_place}
-                                        onChange={handleFormChange}
-                                        placeholder="Enter birth place"
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-4 border-t border-gray-200/50">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formLoading}
-                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-                                >
-                                    {formLoading ? (
-                                        <span className="flex items-center gap-2">
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                            Saving...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-2">
-                                            <i className="fas fa-save"></i>
-                                            Save Employee
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

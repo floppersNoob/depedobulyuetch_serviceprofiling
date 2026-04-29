@@ -7,6 +7,7 @@ import ServiceRecordForm from './ServiceRecordForm.jsx';
 import ServiceRecordAddForm from './ServiceRecordAddForm.jsx';
 import EmploymentTimeline from '../components/EmploymentTimeline.jsx';
 import ViewToggle from '../components/ViewToggle.jsx';
+import EmployeeForm from './EmployeeForm.jsx';
 
 const EmployeeShow = () => {
     const { id } = useParams();
@@ -21,6 +22,7 @@ const EmployeeShow = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingServiceRecordId, setEditingServiceRecordId] = useState(null);
+    const [isEmployeeEditModalOpen, setIsEmployeeEditModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState('timeline'); // 'table' or 'timeline'
 
     useEffect(() => {
@@ -106,10 +108,41 @@ const EmployeeShow = () => {
             });
 
             Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: response.data.message,
-                confirmButtonColor: '#10b981'
+                icon: false,
+                title: false,
+                html: `
+                    <div class="flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div class="mb-2">
+                            <div class="text-xl font-semibold text-gray-900">Import Successful!</div>
+                        </div>
+                        <div class="text-sm text-gray-600 max-w-xs">
+                            ${response.data.message}
+                        </div>
+                        <div class="mt-4">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 rounded-full">
+                                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                <span class="text-xs font-semibold text-emerald-700">Records Added</span>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                confirmButtonColor: '#010066',
+                confirmButtonText: 'Done',
+                customClass: {
+                    popup: 'ios-import-success',
+                    container: 'ios-import-success-container'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__bounceIn'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__bounceOut'
+                }
             });
             setIsImportModalOpen(false);
             setShowPreview(false);
@@ -161,6 +194,15 @@ const EmployeeShow = () => {
         fetchEmployee(); // Refresh the employee data to show changes
     };
 
+    const openEmployeeEditModal = () => {
+        setIsEmployeeEditModalOpen(true);
+    };
+
+    const closeEmployeeEditModal = () => {
+        setIsEmployeeEditModalOpen(false);
+        fetchEmployee(); // Refresh the employee data to show changes
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '-';
         const date = new Date(dateStr);
@@ -188,10 +230,10 @@ const EmployeeShow = () => {
     };
 
     if (loading) return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                    <i className="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                    <i className="fas fa-spinner fa-spin text-gray-600 text-2xl"></i>
                 </div>
                 <p className="text-gray-600 font-medium">Loading employee information...</p>
             </div>
@@ -199,10 +241,10 @@ const EmployeeShow = () => {
     );
     
     if (!employee) return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-                    <i className="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
+                    <i className="fas fa-exclamation-triangle text-gray-600 text-2xl"></i>
                 </div>
                 <p className="text-gray-600 font-medium">Employee not found</p>
                 <Link to="/employees" className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-800">
@@ -214,78 +256,71 @@ const EmployeeShow = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-screen">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 {alert?.type === 'error' && <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />}
 
                 {/* Navigation Header */}
-                <div className="mb-8">
+                <div className="mb-4">
                     <Link 
                         to="/employees" 
                         className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
                     >
                         <i className="fas fa-arrow-left mr-2"></i>
-                        Back to Employees
+                        Back to List of Employees
                     </Link>
                 </div>
                 
                 {/* Employee Info Card */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h1 className="text-3xl font-bold text-white mb-2">
-                                    {employee.surname}, {employee.given_name} {employee.middle_name}
-                                </h1>
-                                <p className="text-blue-100">
-                                    {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
-                                    {employee.birth_place && ` in ${employee.birth_place}`}
-                                </p>
-                            </div>
-                            <div className="flex space-x-3">
-                                <button
-                                    onClick={handlePrintPdf}
-                                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all duration-200 border border-white/20"
-                                >
-                                    <i className="fas fa-file-pdf mr-2"></i>
-                                    Print PDF
-                                </button>
-                                <Link
-                                    to={`/employees/${id}/edit`}
-                                    className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all duration-200 border border-white/20"
-                                >
-                                    <i className="fas fa-edit mr-2"></i>
-                                    Edit
-                                </Link>
-                            </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-2xl font-bold text-[#010066] mb-2">
+                                {employee.surname}, {employee.given_name} {employee.middle_name}
+                            </h1>
+                            <p className="text-gray-500 text-sm">
+                                {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
+                                {employee.birth_place && ` in ${employee.birth_place}`}
+                            </p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handlePrintPdf}
+                                className="bg-red-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-red-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                            >
+                                <i className="fas fa-file-pdf mr-2"></i>
+                                Print PDF
+                            </button>
+                            <button
+                                onClick={openEmployeeEditModal}
+                                className="bg-green-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                            >
+                                <i className="fas fa-edit mr-2"></i>
+                                Edit
+                            </button>
                         </div>
                     </div>
                 </div>
 
             {/* Service Records Section */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <div className="bg-white border border-gray-200 rounded-lg">
+                    <div className="px-6 py-4 border-b border-gray-200">
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg">
-                                    <i className="fas fa-briefcase"></i>
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-800">Service Records</h2>
-                                    <p className="text-sm text-gray-500">Employment history and timeline</p>
-                                </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-[#010066]">Service Records</h2>
+                                <p className="text-sm text-gray-500">Employment history and timeline</p>
                             </div>
-                            <div className="flex space-x-3">
+                            <div className="flex gap-2">
                                 <button
                                     onClick={openImportModal}
-                                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-medium hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                                    className="bg-green-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
                                 >
                                     <i className="fas fa-file-excel mr-2"></i>
                                     Import Excel
                                 </button>
                                 <button
                                     onClick={openAddModal}
-                                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+                                    className="bg-[#010066] text-white px-4 py-3 h-10 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
                                 >
                                     <i className="fas fa-plus mr-2"></i>
                                     Add Service Record
@@ -296,23 +331,22 @@ const EmployeeShow = () => {
                     <div className="p-6">
 
                 {/* View Toggle */}
-                <ViewToggle 
-                    currentView={viewMode}
-                    onViewChange={setViewMode}
-                />
+                <div className="mb-4">
+                    <ViewToggle 
+                        currentView={viewMode}
+                        onViewChange={setViewMode}
+                    />
+                </div>
 
                 {!employee.service_records || employee.service_records.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">
-                        No service records found.{' '}
-                        <button onClick={openAddModal} className="text-blue-600 hover:underline">
-                            Add one
-                        </button>
+                    <p className="text-gray-500 text-center py-4">
+                        No service records found.
                     </p>
                 ) : (
                     <div>
                         {viewMode === 'table' ? (
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
+                            <div>
+                                <table className="w-full divide-y divide-gray-200">
                                     <thead className="bg-gray-50">
                                         <tr>
                                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
@@ -372,14 +406,16 @@ const EmployeeShow = () => {
                                                 <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
                                                     <button
                                                         onClick={() => openEditModal(record.service_id)}
-                                                        className="text-yellow-600 hover:text-yellow-900"
+                                                        className="bg-green-600 text-white px-3 py-2 h-8 rounded hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md text-xs font-medium"
                                                     >
+                                                        <i className="fas fa-edit mr-1"></i>
                                                         Edit
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteServiceRecord(record.service_id)}
-                                                        className="text-red-600 hover:text-red-900"
+                                                        className="bg-red-600 text-white px-3 py-2 h-8 rounded hover:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md text-xs font-medium"
                                                     >
+                                                        <i className="fas fa-trash mr-1"></i>
                                                         Delete
                                                     </button>
                                                 </td>
@@ -401,150 +437,137 @@ const EmployeeShow = () => {
             
             {/* Import Excel Modal */}
             {isImportModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
                     <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
                         onClick={closeImportModal}
                     ></div>
-                    <div className="relative bg-white rounded-3xl shadow-2xl max-w-5xl w-full z-10 transform transition-all duration-300 scale-100">
+                    <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-3xl w-full z-10 border border-gray-200/50">
+                        <div className="flex justify-between items-center p-4 border-b border-gray-200/50">
+                            <h2 className="text-lg font-semibold text-gray-900">Import Service Records</h2>
+                            <button
+                                onClick={closeImportModal}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                                <i className="fas fa-times text-gray-600 text-sm"></i>
+                            </button>
+                        </div>
                         {!showPreview ? (
-                            <>
-                                <div className="p-8">
-                                    <div className="text-center mb-8">
-                                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mb-4 shadow-lg">
-                                            <i className="fas fa-file-excel text-white text-2xl"></i>
-                                        </div>
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Service Records</h2>
-                                        <p className="text-gray-600">Upload your Excel file to add service records</p>
+                            <div className="p-3">
+                                <div className="text-center mb-6">
+                                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mb-3 shadow-lg">
+                                        <i className="fas fa-file-excel text-white text-xl"></i>
                                     </div>
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-2">Import Service Records</h2>
+                                    <p className="text-gray-600 text-sm">Upload your Excel file to add service records</p>
+                                </div>
                                     
-                                    <div className="space-y-6">
+                                    <div className="space-y-4">
                                         <div className="relative">
                                             <input
                                                 type="file"
                                                 accept=".xlsx,.xls"
                                                 onChange={handleFileChange}
-                                                className="w-full h-32 border-2 border-dashed border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 cursor-pointer bg-gray-50 hover:bg-gray-100 text-transparent"
+                                                className="w-full h-32 border-2 border-dashed border-gray-300/50 rounded-3xl focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300 cursor-pointer bg-gray-50/50 hover:bg-gray-100/50 text-transparent backdrop-blur-sm"
                                             />
                                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                                <i className="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                                                <p className="text-gray-600 font-medium">Drop Excel file here</p>
-                                                <p className="text-sm text-gray-500">or click to browse</p>
+                                                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center mb-2">
+                                                    <i className="fas fa-cloud-upload-alt text-emerald-600 text-lg"></i>
+                                                </div>
+                                                <p className="text-gray-700 font-medium text-sm mb-1">Drop Excel file here</p>
+                                                <p className="text-xs text-gray-500">or click to browse</p>
                                             </div>
                                         </div>
                                         
                                         {importFile && (
-                                            <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                                                <div className="flex-shrink-0">
-                                                    <i className="fas fa-file-excel text-emerald-600 text-lg"></i>
+                                            <div className="flex items-center gap-3 p-3 bg-emerald-50/80 backdrop-blur-sm rounded-2xl border border-emerald-200/50">
+                                                <div className="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                                    <i className="fas fa-file-excel text-emerald-600 text-sm"></i>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-emerald-900 truncate">{importFile.name}</p>
-                                                    <p className="text-xs text-emerald-700">Ready to parse</p>
+                                                    <p className="text-sm font-semibold text-gray-900 truncate">{importFile.name}</p>
+                                                    <p className="text-xs text-gray-500">{(importFile.size / 1024).toFixed(2)} KB</p>
                                                 </div>
                                                 <button
+                                                    type="button"
                                                     onClick={() => setImportFile(null)}
-                                                    className="flex-shrink-0 text-emerald-600 hover:text-emerald-800 transition-colors"
+                                                    className="w-5 h-5 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                                                 >
-                                                    <i className="fas fa-times"></i>
+                                                    <i className="fas fa-times text-gray-600 text-xs"></i>
                                                 </button>
                                             </div>
                                         )}
                                         
-                                        <div className="bg-gray-50 rounded-xl p-4">
-                                            <h3 className="text-sm font-semibold text-gray-700 mb-2">File Requirements</h3>
-                                            <ul className="text-xs text-gray-600 space-y-1">
-                                                <li className="flex items-center gap-2">
-                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
-                                                    Excel format (.xlsx, .xls)
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
-                                                    Include service record columns
-                                                </li>
-                                                <li className="flex items-center gap-2">
-                                                    <i className="fas fa-check-circle text-emerald-500 text-xs"></i>
-                                                    Valid date formats
-                                                </li>
-                                            </ul>
+                                        <div className="flex justify-between gap-3 pt-4 border-t border-gray-200/50">
+                                            <button
+                                                type="button"
+                                                onClick={closeImportModal}
+                                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors text-sm font-medium"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleParseExcel}
+                                                disabled={!importFile || importing}
+                                                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl"
+                                            >
+                                                {importing && (
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                                )}
+                                                {importing ? 'Parsing...' : 'Parse Excel'}
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="flex justify-between pt-4 border-t border-gray-200/50">
-                                        <button
-                                            type="button"
-                                            onClick={closeImportModal}
-                                            className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={handleParseExcel}
-                                            disabled={importing || !importFile}
-                                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-                                        >
-                                            {importing ? (
-                                                <span className="flex items-center gap-2">
-                                                    <i className="fas fa-spinner fa-spin"></i>
-                                                    Parsing...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-2">
-                                                    <i className="fas fa-file-excel"></i>
-                                                    Parse Excel
-                                                </span>
-                                            )}
-                                        </button>
-                                    </div>
                                 </div>
-                            </>
                             ) : (
-                            <div className="p-8">
-                                <div className="flex items-start mb-6">
+                            <div className="p-3">
+                                <div className="flex items-center justify-between mb-6">
                                     <button
                                         type="button"
                                         onClick={handleBackToUpload}
-                                        className="px-4 py-2 rounded-xl bg-gray-600 text-white font-medium hover:bg-gray-700 transition-all duration-200 text-sm"
+                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                                     >
-                                        <i className="fas fa-arrow-left mr-2"></i>
-                                        Back
+                                        <i className="fas fa-arrow-left text-gray-600 text-sm"></i>
                                     </button>
                                     <div className="text-center flex-1">
-                                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mb-4 shadow-lg">
-                                            <i className="fas fa-check text-white text-2xl"></i>
+                                        <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-xl mb-2 shadow-lg">
+                                            <i className="fas fa-check text-white text-lg"></i>
                                         </div>
-                                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Review Records</h2>
-                                        <p className="text-gray-600">
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-1">Review Records</h2>
+                                        <p className="text-gray-600 text-sm">
                                             Found <strong>{parsedRecords.length}</strong> service record{parsedRecords.length !== 1 ? 's' : ''} to import
                                         </p>
                                     </div>
+                                    <div className="w-8 h-8"></div>
                                 </div>
                                 
-                                <div className="bg-gray-50 rounded-2xl mb-6 overflow-hidden">
+                                <div className="bg-white/80 backdrop-blur-sm rounded-2xl mb-4 overflow-hidden border border-gray-200/50 shadow-sm">
                                     <div className="max-h-80 overflow-y-auto">
                                         <table className="w-full text-sm">
-                                            <thead className="bg-emerald-600 text-white sticky top-0 z-30">
+                                            <thead className="bg-gray-50/80 backdrop-blur-sm text-gray-700 sticky top-0 z-30 border-b border-gray-200/50">
                                                 <tr>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">FROM</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">TO</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">DESIGNATION</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">STATUS</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SALARY</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">STATION</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SEP. DATE</th>
-                                                    <th className="px-3 py-3 text-left font-semibold text-xs">SEP. CAUSE</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">FROM</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">TO</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">DESIGNATION</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">STATUS</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">SALARY</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">STATION</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">SEP. DATE</th>
+                                                    <th className="px-4 py-3 text-left font-semibold text-xs">SEP. CAUSE</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-gray-200 bg-white">
+                                            <tbody className="divide-y divide-gray-200/50">
                                                 {[...parsedRecords].sort((a, b) => new Date(b.date_from) - new Date(a.date_from)).map((record, index) => (
-                                                    <tr key={index} className="hover:bg-gray-50">
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{formatDate(record.date_from)}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.date_to ? formatDate(record.date_to) : 'Present'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.designation || '-'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.status || '-'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.salary ? record.salary.toLocaleString() : '-'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.station || '-'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.separation_date ? formatDate(record.separation_date) : '-'}</td>
-                                                        <td className="px-3 py-3 text-sm text-gray-900">{record.separation_cause || '-'}</td>
+                                                    <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">{formatDate(record.date_from)}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.date_to ? formatDate(record.date_to) : <span className="inline-flex px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-full">Present</span>}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.designation || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.status || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.salary ? record.salary.toLocaleString() : '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.station || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.separation_date ? formatDate(record.separation_date) : '-'}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-900">{record.separation_cause || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -552,39 +575,41 @@ const EmployeeShow = () => {
                                     </div>
                                 </div>
                                 
-                                <div className="flex justify-between pt-4 border-t border-gray-200/50">
+                                <div className="flex justify-between gap-3 pt-4 border-t border-gray-200/50">
                                     <button
                                         type="button"
                                         onClick={closeImportModal}
-                                        className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors text-sm font-medium"
                                     >
                                         Cancel
                                     </button>
-                                    <div className="flex space-x-3">
-                                        <button
-                                            onClick={handleConfirmImport}
-                                            disabled={importing}
-                                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-medium hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-                                        >
-                                            {importing ? (
-                                                <span className="flex items-center gap-2">
-                                                    <i className="fas fa-spinner fa-spin"></i>
-                                                    Importing...
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-2">
-                                                    <i className="fas fa-check"></i>
-                                                    Confirm Import
-                                                </span>
-                                            )}
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={handleConfirmImport}
+                                        disabled={importing}
+                                        className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl"
+                                    >
+                                        {importing && (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        )}
+                                        {importing ? 'Importing...' : 'Import Records'}
+                                    </button>
                                 </div>
                             </div>
                         )}
                     </div>
                 </div>
             )}
+
+            {/* Edit Employee Modal */}
+            <EmployeeForm
+                isOpen={isEmployeeEditModalOpen}
+                onClose={closeEmployeeEditModal}
+                employeeId={id}
+                onSuccess={() => {
+                    fetchEmployee();
+                    closeEmployeeEditModal();
+                }}
+            />
 
             {/* Add Service Record Modal */}
             <ServiceRecordAddForm

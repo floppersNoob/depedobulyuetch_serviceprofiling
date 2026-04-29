@@ -43,6 +43,251 @@
     color: #010066;
 }
 
+.text-dpwh-blue-bold {
+    color: #010066;
+    font-weight: 700;
+}
+
+.font-bold-dpwh {
+    color: #010066;
+    font-weight: 700;
+}
+
+/* iOS-style Toast Notifications */
+.swal2-container.ios-toast-container {
+    z-index: 9999;
+}
+
+.swal2-popup.ios-toast {
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.swal2-popup.ios-toast .swal2-timer-progress-bar {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+}
+
+/* Slide animations for iOS toast */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.animate__slideInRight {
+    animation: slideInRight 0.3s ease-out;
+}
+
+.animate__slideOutRight {
+    animation: slideOutRight 0.3s ease-in;
+}
+
+/* iOS-style Import Success Alert */
+.swal2-container.ios-import-success-container {
+    z-index: 9999;
+}
+
+.swal2-popup.ios-import-success {
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.98) !important;
+    padding: 32px 24px;
+}
+
+.swal2-popup.ios-import-success .swal2-actions {
+    margin-top: 24px;
+}
+
+.swal2-popup.ios-import-success .swal2-confirm {
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 24px;
+    background: #010066;
+    border: none;
+    box-shadow: 0 4px 12px rgba(1, 0, 102, 0.3);
+    transition: all 0.3s ease;
+}
+
+.swal2-popup.ios-import-success .swal2-confirm:hover {
+    background: #000055;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(1, 0, 102, 0.4);
+}
+
+/* Bounce animations for iOS feel */
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-20px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05) translateY(0);
+    }
+    70% {
+        transform: scale(0.9) translateY(0);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes bounceOut {
+    0% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    20% {
+        transform: scale(1.1) translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3) translateY(20px);
+    }
+}
+
+.animate__bounceIn {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate__bounceOut {
+    animation: bounceOut 0.4s ease-in;
+}
+
+/* iOS-style Validation Error Alert */
+.swal2-container.ios-validation-error-container {
+    z-index: 9999;
+}
+
+.swal2-popup.ios-validation-error {
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.98) !important;
+    padding: 32px 24px;
+}
+
+.swal2-popup.ios-validation-error .swal2-actions {
+    margin-top: 24px;
+}
+
+.swal2-popup.ios-validation-error .swal2-confirm {
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 24px;
+    background: #010066;
+    border: none;
+    box-shadow: 0 4px 12px rgba(1, 0, 102, 0.3);
+    transition: all 0.3s ease;
+}
+
+.swal2-popup.ios-validation-error .swal2-confirm:hover {
+    background: #000055;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(1, 0, 102, 0.4);
+}
+
+/* iOS-style General Error Alert */
+.swal2-container.ios-general-error-container {
+    z-index: 9999;
+}
+
+.swal2-popup.ios-general-error {
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.98) !important;
+    padding: 32px 24px;
+}
+
+.swal2-popup.ios-general-error .swal2-actions {
+    margin-top: 24px;
+}
+
+.swal2-popup.ios-general-error .swal2-confirm {
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 24px;
+    background: #010066;
+    border: none;
+    box-shadow: 0 4px 12px rgba(1, 0, 102, 0.3);
+    transition: all 0.3s ease;
+}
+
+.swal2-popup.ios-general-error .swal2-confirm:hover {
+    background: #000055;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(1, 0, 102, 0.4);
+}
+
+/* iOS-style Service Success Alert */
+.swal2-container.ios-service-success-container {
+    z-index: 9999;
+}
+
+.swal2-popup.ios-service-success {
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.98) !important;
+    padding: 32px 24px;
+}
+
+.swal2-popup.ios-service-success .swal2-actions {
+    margin-top: 24px;
+}
+
+.swal2-popup.ios-service-success .swal2-confirm {
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 24px;
+    background: #010066;
+    border: none;
+    box-shadow: 0 4px 12px rgba(1, 0, 102, 0.3);
+    transition: all 0.3s ease;
+}
+
+.swal2-popup.ios-service-success .swal2-confirm:hover {
+    background: #000055;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(1, 0, 102, 0.4);
+}
+
 @keyframes shimmer {
     0% {
         opacity: 0.4;

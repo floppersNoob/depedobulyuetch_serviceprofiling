@@ -58,8 +58,10 @@ class EmployeeController extends Controller
             'surname' => 'required|string|max:255',
             'given_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'birth_date' => 'nullable|date',
+            'birth_date' => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'birth_place' => 'nullable|string|max:255',
+        ], [
+            'birth_date.before_or_equal' => 'Employee must be at least 18 years old.',
         ]);
 
         $employee = Employee::create($validated);
@@ -89,8 +91,10 @@ class EmployeeController extends Controller
             'surname' => 'required|string|max:255',
             'given_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'birth_date' => 'nullable|date',
+            'birth_date' => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
             'birth_place' => 'nullable|string|max:255',
+        ], [
+            'birth_date.before_or_equal' => 'Employee must be at least 18 years old.',
         ]);
 
         $employee = Employee::findOrFail($id);

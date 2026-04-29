@@ -276,13 +276,39 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
 
             // Show success alert
             Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: `Service record ${isEdit ? 'updated' : 'created'} successfully`,
+                icon: false,
+                title: false,
+                html: `
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900">${isEdit ? 'Updated' : 'Created'}!</div>
+                            <div class="text-sm text-gray-600">Service record ${isEdit ? 'updated' : 'created'} successfully</div>
+                        </div>
+                    </div>
+                `,
                 timer: 2000,
+                timerProgressBar: true,
                 showConfirmButton: false,
                 position: 'top-end',
-                toast: true
+                toast: true,
+                width: '320px',
+                padding: '16px',
+                background: '#ffffff',
+                customClass: {
+                    popup: 'ios-toast',
+                    container: 'ios-toast-container'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__slideInRight'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__slideOutRight'
+                }
             });
 
             // Navigate or close modal
@@ -619,10 +645,10 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
                 <div
-                    className="absolute inset-0 bg-gray-900/30 backdrop-blur-md transition-opacity duration-300"
+                    className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300"
                     onClick={onClose}
                 ></div>
-                <div className="relative glass-card rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] max-w-4xl w-full z-10 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100">
+                <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-4xl w-full z-10 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100 border border-gray-200/50">
                     {formContent}
                 </div>
             </div>

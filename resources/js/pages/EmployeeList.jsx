@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '../components/Pagination.jsx';
 import { useToast } from '../components/Toast.jsx';
+import EmployeeForm from './EmployeeForm.jsx';
 
 // Module-level cache for employee list data
 const employeesCache = {
@@ -33,6 +34,7 @@ const EmployeeList = () => {
     });
     const [formErrors, setFormErrors] = useState({});
     const [formLoading, setFormLoading] = useState(false);
+    const [editingEmployeeId, setEditingEmployeeId] = useState(null);
     const { addToast } = useToast();
 
     // Filters
@@ -239,6 +241,20 @@ const EmployeeList = () => {
             birth_place: ''
         });
         setFormErrors({});
+        setEditingEmployeeId(null);
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (employee) => {
+        setFormData({
+            surname: employee.surname,
+            given_name: employee.given_name,
+            middle_name: employee.middle_name || '',
+            birth_date: employee.birth_date || '',
+            birth_place: employee.birth_place || ''
+        });
+        setFormErrors({});
+        setEditingEmployeeId(employee.employee_id);
         setIsModalOpen(true);
     };
 
@@ -258,18 +274,20 @@ const EmployeeList = () => {
         setFormLoading(true);
 
         try {
-            await axios.post('/api/employees', formData);
-            addToast('Employee created successfully', 'success');
+            if (editingEmployeeId) {
+                await axios.put(`/api/employees/${editingEmployeeId}`, formData);
+                addToast('Employee updated successfully', 'success');
+            } else {
+                await axios.post('/api/employees', formData);
+                addToast('Employee created successfully', 'success');
+            }
             closeModal();
-            // Clear cache to force fresh data
-            employeesCache.data = null;
-            employeesCache.timestamp = 0;
-            fetchEmployees(1, search, false);
+            fetchEmployees();
         } catch (error) {
             if (error.response?.data?.errors) {
                 setFormErrors(error.response.data.errors);
             } else {
-                addToast('Failed to create employee', 'error');
+                addToast(`Failed to ${editingEmployeeId ? 'update' : 'create'} employee`, 'error');
             }
         }
         setFormLoading(false);
@@ -280,27 +298,35 @@ const EmployeeList = () => {
         return (
             <div className="space-y-6">
                 <div className="flex justify-between items-center mb-6">
-                    <div className="h-8 bg-gray-200 rounded w-32 animate-shimmer"></div>
-                    <div className="h-10 bg-gray-200 rounded w-32 animate-shimmer"></div>
+                    <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
+                    <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="h-10 bg-gray-200 rounded animate-shimmer" style={{animationDelay: `${i * 100}ms`}}></div>
+                
+                <div className="flex flex-wrap gap-3 mb-6">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="h-10 bg-gray-200 rounded w-32 animate-pulse" style={{animationDelay: `${i * 100}ms`}}></div>
                     ))}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                        <div key={i} className="bg-white rounded-xl shadow p-6" style={{animationDelay: `${i * 100}ms`}}>
-                            <div className="flex items-center space-x-4">
-                                <div className="w-14 h-14 bg-gray-200 rounded-full animate-shimmer"></div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="bg-white border border-gray-200 rounded-lg p-4" style={{animationDelay: `${i * 100}ms`}}>
+                            <div className="flex items-center space-x-3 mb-3">
+                                <div className="bg-gray-200 rounded-full w-10 h-10 animate-pulse"></div>
                                 <div className="flex-1">
-                                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2 animate-shimmer"></div>
-                                    <div className="h-4 bg-gray-200 rounded w-1/2 animate-shimmer"></div>
+                                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-1 animate-pulse"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-3 mt-4">
-                                <div className="h-12 bg-gray-200 rounded animate-shimmer"></div>
-                                <div className="h-12 bg-gray-200 rounded animate-shimmer"></div>
+                            <div className="space-y-2 mb-3">
+                                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="h-8 bg-gray-200 rounded flex-1 animate-pulse"></div>
+                                <div className="h-8 bg-gray-200 rounded w-8 animate-pulse"></div>
+                                <div className="h-8 bg-gray-200 rounded w-8 animate-pulse"></div>
                             </div>
                         </div>
                     ))}
@@ -313,8 +339,8 @@ const EmployeeList = () => {
         <div className="space-y-6">
 
             <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-2xl font-bold text-dpwh-blue">Employees</h1>
+                <div>
+                    <h1 className="text-2xl font-bold text-[#010066]">Employees</h1>
                     {isRefreshing && (
                         <span className="text-xs text-gray-500 animate-pulse">
                             <i className="fas fa-sync-alt fa-spin mr-1"></i>Updating...
@@ -323,158 +349,143 @@ const EmployeeList = () => {
                 </div>
                 <button
                     onClick={openModal}
-                    className="glass-card text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 hover:shadow-md hover:scale-105 font-medium transition-all duration-300"
+                    className="bg-[#010066] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                     <i className="fas fa-plus mr-2"></i>Add Employee
                 </button>
             </div>
 
             {/* Search and Filters */}
-            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-4">
-                {/* Filter Dropdowns - Left Side */}
-                <div className="flex flex-wrap gap-3">
-                    <select
-                        value={filters.office}
-                        onChange={(e) => setFilters({...filters, office: e.target.value})}
-                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                    >
-                        <option value="">All Offices</option>
-                        {offices.map(office => (
-                            <option key={office.office_id} value={office.office_id}>
-                                {office.department} {office.branch && `(${office.branch})`}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        value={filters.position}
-                        onChange={(e) => setFilters({...filters, position: e.target.value})}
-                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                    >
-                        <option value="">All Designations</option>
-                        {positions.map(position => (
-                            <option key={position.position_id} value={position.position_id}>
-                                {position.position_name}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        value={filters.status}
-                        onChange={(e) => setFilters({...filters, status: e.target.value})}
-                        className="glass-card px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue"
-                    >
-                        <option value="">All Status</option>
-                        {statuses.map(status => (
-                            <option key={status.status_id} value={status.status_id}>
-                                {status.status_name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* Search and Reset - Right Side */}
-                <div className="flex items-center gap-3 md:ml-auto">
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search..."
-                        className="glass-card w-64 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-dpwh-blue placeholder-gray-500"
-                    />
-                    <button
-                        onClick={() => {
-                            setSearch('');
-                            setFilters({ office: '', position: '', status: '', yearsOfService: '' });
-                        }}
-                        className="glass-card text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 hover:text-[#eb3505] hover:shadow-md font-medium transition-all duration-300 whitespace-nowrap"
-                    >
-                        Reset Filters
-                    </button>
-                </div>
+            <div className="flex flex-wrap gap-3 mb-6">
+                <select
+                    value={filters.office}
+                    onChange={(e) => setFilters({...filters, office: e.target.value})}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] w-48"
+                >
+                    <option value="">All Offices</option>
+                    {offices.map(office => (
+                        <option key={office.office_id} value={office.office_id}>
+                            {office.department} {office.branch && `(${office.branch})`}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={filters.position}
+                    onChange={(e) => setFilters({...filters, position: e.target.value})}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] w-48"
+                >
+                    <option value="">All Designations</option>
+                    {positions.map(position => (
+                        <option key={position.position_id} value={position.position_id}>
+                            {position.position_name}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={filters.status}
+                    onChange={(e) => setFilters({...filters, status: e.target.value})}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] w-48"
+                >
+                    <option value="">All Status</option>
+                    {statuses.map(status => (
+                        <option key={status.status_id} value={status.status_id}>
+                            {status.status_name}
+                        </option>
+                    ))}
+                </select>
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search employees..."
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 w-48 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066]"
+                />
+                <button
+                    onClick={() => {
+                        setSearch('');
+                        setFilters({ office: '', position: '', status: '', yearsOfService: '' });
+                    }}
+                    className="bg-white border border-gray-300 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm w-20"
+                >
+                    Reset
+                </button>
             </div>
 
-            {/* Modern Card Grid */}
+            {/* Employee Grid */}
             {filteredEmployees.length === 0 ? (
-                <div className="text-center py-16 bg-white rounded-lg shadow">
-                    <div className="text-6xl mb-4 text-gray-400"><i className="fas fa-users-slash"></i></div>
-                    <h3 className="text-lg font-semibold text-dpwh-blue mb-2">No employees found</h3>
+                <div className="text-center py-16 bg-white border border-gray-200 rounded-lg">
+                    <div className="text-gray-400 text-5xl mb-4">
+                        <i className="fas fa-users-slash"></i>
+                    </div>
+                    <h3 className="text-lg font-semibold text-[#010066] mb-2">No employees found</h3>
                     <p className="text-gray-500 mb-4">Get started by adding your first employee</p>
                     <button
                         onClick={openModal}
-                        className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        className="bg-[#010066] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Add Employee
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredEmployees.map((employee) => (
-                        <div key={employee.employee_id} className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group overflow-hidden">
-                            <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2"></div>
-                            <div className="p-6">
-                                <div className="flex items-center space-x-4 mb-4">
-                                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center text-xl font-bold shadow-lg">
-                                        {employee.surname.charAt(0)}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-dpwh-blue text-lg group-hover:text-blue-600 transition-colors">
-                                            {employee.surname}, {employee.given_name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500">{employee.middle_name || ''}</p>
-                                    </div>
+                        <div key={employee.employee_id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-center space-x-3 mb-3">
+                                <div className="bg-[#010066] text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
+                                    {employee.surname.charAt(0).toUpperCase()}
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold text-[#010066] truncate">
+                                        {employee.surname}, {employee.given_name}
+                                    </h3>
+                                    <p className="text-sm text-gray-500 truncate">{employee.middle_name || ''}</p>
+                                </div>
+                            </div>
 
-                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                    {employee.service_records && employee.service_records.length > 0 && (
-                                        <div className="bg-blue-50 rounded-lg p-3">
-                                            <div className="text-xs text-gray-500 mb-1">Designation</div>
-                                            <div className="text-sm font-semibold text-dpwh-blue truncate">
-                                                {employee.service_records[0]?.position?.position_name || '-'}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {employee.service_records && employee.service_records.length > 0 && (
-                                        <div className="bg-green-50 rounded-lg p-3">
-                                            <div className="text-xs text-gray-500 mb-1">Status</div>
-                                            <div className="text-sm font-semibold text-green-700 truncate">
-                                                {employee.service_records[0]?.employment_status?.status_name || '-'}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
-                                    <div className="flex items-center">
-                                        <i className="fas fa-clipboard-list mr-2 text-blue-500"></i>
-                                        <span>{employee.service_records_count || 0} records</span>
+                            <div className="space-y-2 mb-3 text-sm">
+                                {employee.service_records && employee.service_records.length > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Position:</span>
+                                        <span className="font-medium">{employee.service_records[0]?.position?.position_name || '-'}</span>
                                     </div>
-                                    {employee.birth_date && (
-                                        <div className="flex items-center">
-                                            <i className="fas fa-birthday-cake mr-2 text-pink-500"></i>
-                                            <span>{new Date(employee.birth_date).toLocaleDateString()}</span>
-                                        </div>
-                                    )}
+                                )}
+                                {employee.service_records && employee.service_records.length > 0 && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Status:</span>
+                                        <span className="font-medium">{employee.service_records[0]?.employment_status?.status_name || '-'}</span>
+                                    </div>
+                                )}
+                                {employee.birth_date && (
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Birth Date:</span>
+                                        <span className="font-medium">{new Date(employee.birth_date).toLocaleDateString()}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Records:</span>
+                                    <span className="font-medium">{employee.service_records_count || 0}</span>
                                 </div>
+                            </div>
 
-                                <div className="flex space-x-2">
-                                    <Link
-                                        to={`/employees/${employee.employee_id}`}
-                                        className="flex-1 text-center bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2.5 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg"
-                                    >
-                                        View Details
-                                    </Link>
-                                    <Link
-                                        to={`/employees/${employee.employee_id}/edit`}
-                                        className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-all duration-300 text-sm font-medium"
-                                    >
-                                        <i className="fas fa-edit"></i>
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(employee.employee_id)}
-                                        className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all duration-300 text-sm font-medium"
-                                    >
-                                        <i className="fas fa-trash"></i>
-                                    </button>
-                                </div>
+                            <div className="flex gap-2">
+                                <Link
+                                    to={`/employees/${employee.employee_id}`}
+                                    className="flex-1 text-center bg-[#010066] text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700 transition-colors"
+                                >
+                                    View
+                                </Link>
+                                <button
+                                    onClick={() => openEditModal(employee)}
+                                    className="px-3 py-1.5 rounded bg-green-600 text-white hover:bg-green-700 text-sm transition-colors"
+                                >
+                                    <i className="fas fa-edit"></i>
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(employee.employee_id)}
+                                    className="px-3 py-1.5 rounded border border-gray-300 text-gray-600 hover:bg-red-50 hover:text-red-600 text-sm transition-colors"
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -483,130 +494,16 @@ const EmployeeList = () => {
 
             <Pagination data={pagination} onPageChange={(page) => fetchEmployees(page, search)} />
 
-            {/* Add Employee Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
-                    <div
-                        className="absolute inset-0 bg-gray-900/30 backdrop-blur-md transition-opacity duration-300"
-                        onClick={closeModal}
-                    ></div>
-
-                    <div className="relative glass-card rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] max-w-2xl w-full z-10 max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 opacity-100">
-                        <div className="flex justify-between items-center p-6 border-b border-gray-200/50">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg">
-                                    <i className="fas fa-user-plus"></i>
-                                </div>
-                                <h2 className="text-xl font-bold text-dpwh-blue">Add New Employee</h2>
-                            </div>
-                            <button
-                                onClick={closeModal}
-                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
-                            >
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleFormSubmit} className="p-6 space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Surname *</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="surname"
-                                            value={formData.surname}
-                                            onChange={handleFormChange}
-                                            required
-                                            placeholder="Enter surname"
-                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                        />
-                                        {formErrors.surname && <p className="text-red-500 text-sm mt-1">{formErrors.surname[0]}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Given Name *</label>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="given_name"
-                                            value={formData.given_name}
-                                            onChange={handleFormChange}
-                                            required
-                                            placeholder="Enter given name"
-                                            className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                        />
-                                        {formErrors.given_name && <p className="text-red-500 text-sm mt-1">{formErrors.given_name[0]}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Middle Name</label>
-                                    <input
-                                        type="text"
-                                        name="middle_name"
-                                        value={formData.middle_name}
-                                        onChange={handleFormChange}
-                                        placeholder="Enter middle name"
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Birth Date</label>
-                                    <input
-                                        type="date"
-                                        name="birth_date"
-                                        value={formData.birth_date}
-                                        onChange={handleFormChange}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 space-y-1.5">
-                                    <label className="block text-sm font-semibold text-gray-700">Birth Place</label>
-                                    <input
-                                        type="text"
-                                        name="birth_place"
-                                        value={formData.birth_place}
-                                        onChange={handleFormChange}
-                                        placeholder="Enter birth place"
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-4 border-t border-gray-200/50">
-                                <button
-                                    type="button"
-                                    onClick={closeModal}
-                                    className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-all duration-200"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={formLoading}
-                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
-                                >
-                                    {formLoading ? (
-                                        <span className="flex items-center gap-2">
-                                            <i className="fas fa-spinner fa-spin"></i>
-                                            Saving...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-2">
-                                            <i className="fas fa-save"></i>
-                                            Save Employee
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            {/* Employee Modal */}
+            <EmployeeForm
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                employeeId={editingEmployeeId}
+                onSuccess={() => {
+                    fetchEmployees();
+                    closeModal();
+                }}
+            />
         </div>
     );
 };
