@@ -15,10 +15,15 @@ class EmployeeController extends Controller
 
         if ($request->has('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('surname', 'like', "%{$search}%")
-                  ->orWhere('given_name', 'like', "%{$search}%")
-                  ->orWhere('middle_name', 'like', "%{$search}%");
+            $searchTerms = explode(' ', trim($search));
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function ($subQ) use ($term) {
+                        $subQ->where('surname', 'like', "%{$term}%")
+                             ->orWhere('given_name', 'like', "%{$term}%")
+                             ->orWhere('middle_name', 'like', "%{$term}%");
+                    });
+                }
             });
         }
 

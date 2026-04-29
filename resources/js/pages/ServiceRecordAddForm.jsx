@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Alert from '../components/Alert.jsx';
+import Swal from 'sweetalert2';
 
 const ServiceRecordAddForm = ({ isOpen, onClose, employeeId }) => {
     // Main service record data
@@ -112,7 +113,14 @@ const ServiceRecordAddForm = ({ isOpen, onClose, employeeId }) => {
                     ...separationData
                 });
             }
+Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Service record added successfully',
+                confirmButtonColor: '#10b981'
+            });
 
+            
             onClose();
         } catch (error) {
             if (error.response?.data?.errors) {

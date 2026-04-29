@@ -41,21 +41,8 @@ const ViewToggle = ({ currentView, onViewChange, onPrint }) => {
                                 <span>Table View</span>
                             </div>
                         </button>
-                        
-                       
                     </div>
                 </div>
-                
-                {/* Print Button */}
-                <button
-                    onClick={onPrint}
-                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm-7 4h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2z" />
-                    </svg>
-                    <span>Print</span>
-                </button>
             </div>
         </div>
     );

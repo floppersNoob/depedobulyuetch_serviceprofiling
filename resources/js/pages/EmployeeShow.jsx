@@ -21,7 +21,7 @@ const EmployeeShow = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingServiceRecordId, setEditingServiceRecordId] = useState(null);
-    const [viewMode, setViewMode] = useState('table'); // 'table' or 'timeline'
+    const [viewMode, setViewMode] = useState('timeline'); // 'table' or 'timeline'
 
     useEffect(() => {
         fetchEmployee();
@@ -299,7 +299,6 @@ const EmployeeShow = () => {
                 <ViewToggle 
                     currentView={viewMode}
                     onViewChange={setViewMode}
-                    onPrint={handlePrint}
                 />
 
                 {!employee.service_records || employee.service_records.length === 0 ? (
