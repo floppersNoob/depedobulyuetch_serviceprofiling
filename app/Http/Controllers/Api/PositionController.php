@@ -68,6 +68,15 @@ class PositionController extends Controller
     public function destroy(string $id)
     {
         $position = Position::findOrFail($id);
+
+        // Check if position is in use by service records
+        $usageCount = \App\Models\ServiceRecord::where('position_id', $id)->count();
+        if ($usageCount > 0) {
+            return response()->json([
+                'message' => "Cannot delete position '{$position->position_name}' because it is used in {$usageCount} service record(s)."
+            ], 422);
+        }
+
         $name = $position->position_name;
         $position->delete();
 

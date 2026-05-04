@@ -142,8 +142,12 @@ class ReportController extends Controller
                 $parsedSeparationDate = null;
                 if (!empty($separationDate) && is_numeric($separationDate)) {
                     $parsedSeparationDate = Date::excelToDateTimeObject($separationDate)->format('Y-m-d');
+                    // Treat 1970-01-01 as null (empty Excel cell artifact)
+                    if ($parsedSeparationDate === '1970-01-01') $parsedSeparationDate = null;
                 } elseif (!empty($separationDate)) {
                     $parsedSeparationDate = date('Y-m-d', strtotime($separationDate));
+                    // Treat 1970-01-01 as null (empty Excel cell artifact)
+                    if ($parsedSeparationDate === '1970-01-01') $parsedSeparationDate = null;
                 }
 
                 $parsedRecords[] = [
@@ -157,7 +161,8 @@ class ReportController extends Controller
                     'branch' => trim($branch) ?: 'Nat\'l',
                     'leave' => trim($leave),
                     'separation_date' => $parsedSeparationDate,
-                    'separation_cause' => trim($separationCause),
+                    'separation_cause' => $parsedSeparationDate ? trim($separationCause) : null,
+                    'remarks' => !$parsedSeparationDate && trim($separationCause) ? trim($separationCause) : null,
                 ];
             }
 
@@ -275,6 +280,7 @@ class ReportController extends Controller
                     if ($existingRecord->office_id != ($office ? $office->office_id : null)) $hasChanges = true;
                     if ($existingRecord->station_place != ($recordData['station'] ?? null)) $hasChanges = true;
                     if ($existingRecord->branch != ($recordData['branch'] ?? null)) $hasChanges = true;
+                    if ($existingRecord->remarks != ($recordData['remarks'] ?? null)) $hasChanges = true;
 
                     // Compare salary
                     if ($existingSalary) {
@@ -313,6 +319,7 @@ class ReportController extends Controller
                         'office_id' => $office ? $office->office_id : null,
                         'station_place' => $recordData['station'] ?? null,
                         'branch' => $recordData['branch'] ?? null,
+                        'remarks' => $recordData['remarks'] ?? null,
                     ]);
 
                     // Update salary history
@@ -346,8 +353,8 @@ class ReportController extends Controller
                         ]);
                     }
 
-                    // Update separation record
-                    if (!empty($recordData['separation_date']) || !empty(trim($recordData['separation_cause'] ?? ''))) {
+                    // Update separation record - only for real separations (with date)
+                    if (!empty($recordData['separation_date'])) {
                         if ($existingSeparation) {
                             $existingSeparation->update([
                                 'separation_date' => $recordData['separation_date'] ?? null,
@@ -377,6 +384,7 @@ class ReportController extends Controller
                         'date_to' => $recordData['date_to'],
                         'station_place' => $recordData['station'] ?? null,
                         'branch' => $recordData['branch'] ?? null,
+                        'remarks' => $recordData['remarks'] ?? null,
                     ]);
 
                     // Create salary history
@@ -420,8 +428,8 @@ class ReportController extends Controller
                         }
                     }
 
-                    // Create separation record - create if there's a date OR if there's text in cause/remarks
-                    if (!empty($recordData['separation_date']) || !empty(trim($recordData['separation_cause'] ?? ''))) {
+                    // Create separation record - only for real separations (with date)
+                    if (!empty($recordData['separation_date'])) {
                         SeparationRecord::create([
                             'service_id' => $serviceRecord->service_id,
                             'separation_date' => $recordData['separation_date'] ?? null,

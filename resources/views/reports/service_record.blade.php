@@ -231,6 +231,7 @@
                 <th colspan="2" class="main-header">OFFICE ENTITY/DIVISION</th>
                 <th rowspan="2" class="main-header">Leave<br>w/o Pay</th>
                 <th colspan="2" class="main-header">SEPARATION</th>
+                <th rowspan="2" class="main-header">Remarks</th>
             </tr>
             <tr>
                 <th class="sub-header">FROM</th>
@@ -242,6 +243,7 @@
                 <th class="sub-header">Branch<br>(3)</th>
                 <th class="sub-header">Date</th>
                 <th class="sub-header">Cause</th>
+                <th class="sub-header"></th>
             </tr>
         </thead>
         <tbody>
@@ -272,17 +274,21 @@
                             None
                         @endif
                     </td>
-                    <td class="data-cell">{{ $record->separationRecord ? date('m/d/y', strtotime($record->separationRecord->separation_date)) : '' }}</td>
-                    <td class="data-cell">{{ $record->separationRecord->cause ?? '' }}</td>
+                    @php
+                        $isRealSeparation = $record->separationRecord && $record->separationRecord->separation_date;
+                    @endphp
+                    <td class="data-cell">{{ $isRealSeparation ? date('m/d/y', strtotime($record->separationRecord->separation_date)) : '' }}</td>
+                    <td class="data-cell">{{ $isRealSeparation ? $record->separationRecord->cause : '' }}</td>
+                    <td class="data-cell left-align">{{ $record->remarks ?? '' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="10" style="height: 30px;"></td>
+                    <td colspan="11" style="height: 30px;"></td>
                 </tr>
             @endforelse
             <!-- Empty row for additional entry -->
             <tr>
-                <td colspan="10" style="height: 20px;"></td>
+                <td colspan="11" style="height: 20px;"></td>
             </tr>
         </tbody>
     </table>

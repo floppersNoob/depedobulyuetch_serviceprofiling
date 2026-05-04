@@ -70,6 +70,7 @@ class ServiceRecordController extends Controller
             'branch' => 'nullable|string|max:255',
             'date_from' => 'required|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
+            'remarks' => 'nullable|string|max:500',
         ]);
 
         // Get or create office and position
@@ -95,6 +96,7 @@ class ServiceRecordController extends Controller
             'office_id' => $officeId,
             'date_from' => $validated['date_from'],
             'date_to' => $validated['date_to'],
+            'remarks' => $validated['remarks'] ?? null,
         ]);
 
         // Log activity
@@ -131,6 +133,7 @@ class ServiceRecordController extends Controller
             'branch' => 'nullable|string|max:255',
             'date_from' => 'required|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
+            'remarks' => 'nullable|string|max:500',
         ]);
 
         // Get or create office and position
@@ -146,6 +149,7 @@ class ServiceRecordController extends Controller
             'office_id' => $officeId,
             'date_from' => $validated['date_from'],
             'date_to' => $validated['date_to'],
+            'remarks' => $validated['remarks'] ?? null,
         ]);
 
         ActivityLog::create([

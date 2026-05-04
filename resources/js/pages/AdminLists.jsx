@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import Alert from '../components/Alert.jsx';
 
 const AdminLists = () => {
@@ -102,14 +103,54 @@ const AdminLists = () => {
     };
 
     const handleDeletePosition = async (id) => {
-        if (!confirm('Are you sure you want to delete this designation?')) return;
+        const result = await Swal.fire({
+            title: 'Delete Designation?',
+            text: 'Are you sure you want to delete this designation?',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#8e8e93',
+            reverseButtons: true,
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showClass: { popup: 'animate__animated animate__fadeIn' },
+            hideClass: { popup: 'animate__animated animate__fadeOut' },
+            customClass: {
+                popup: 'ios-alert-popup',
+                title: 'ios-alert-title',
+                confirmButton: 'ios-alert-btn-danger',
+                cancelButton: 'ios-alert-btn-cancel',
+                actions: 'ios-alert-actions'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await axios.delete(`/api/positions/${id}`);
             setAlert({ message: 'Designation deleted successfully', type: 'success' });
             fetchAllData();
         } catch (error) {
-            setAlert({ message: 'Failed to delete designation', type: 'error' });
+            if (error.response?.status === 422) {
+                Swal.fire({
+                    title: 'Cannot Delete',
+                    text: error.response.data.message || 'This designation is in use and cannot be deleted.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007aff',
+                    background: '#fff',
+                    backdrop: 'rgba(0,0,0,0.4)',
+                    showClass: { popup: 'animate__animated animate__fadeIn' },
+                    hideClass: { popup: 'animate__animated animate__fadeOut' },
+                    customClass: {
+                        popup: 'ios-alert-popup',
+                        title: 'ios-alert-title',
+                        confirmButton: 'ios-alert-btn'
+                    }
+                });
+            } else {
+                setAlert({ message: 'Failed to delete designation', type: 'error' });
+            }
         }
     };
 
@@ -148,14 +189,54 @@ const AdminLists = () => {
     };
 
     const handleDeleteOffice = async (id) => {
-        if (!confirm('Are you sure you want to delete this office?')) return;
+        const result = await Swal.fire({
+            title: 'Delete Office?',
+            text: 'Are you sure you want to delete this office?',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#8e8e93',
+            reverseButtons: true,
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showClass: { popup: 'animate__animated animate__fadeIn' },
+            hideClass: { popup: 'animate__animated animate__fadeOut' },
+            customClass: {
+                popup: 'ios-alert-popup',
+                title: 'ios-alert-title',
+                confirmButton: 'ios-alert-btn-danger',
+                cancelButton: 'ios-alert-btn-cancel',
+                actions: 'ios-alert-actions'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await axios.delete(`/api/offices/${id}`);
             setAlert({ message: 'Office deleted successfully', type: 'success' });
             fetchAllData();
         } catch (error) {
-            setAlert({ message: 'Failed to delete office', type: 'error' });
+            if (error.response?.status === 422) {
+                Swal.fire({
+                    title: 'Cannot Delete',
+                    text: error.response.data.message || 'This office is in use and cannot be deleted.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007aff',
+                    background: '#fff',
+                    backdrop: 'rgba(0,0,0,0.4)',
+                    showClass: { popup: 'animate__animated animate__fadeIn' },
+                    hideClass: { popup: 'animate__animated animate__fadeOut' },
+                    customClass: {
+                        popup: 'ios-alert-popup',
+                        title: 'ios-alert-title',
+                        confirmButton: 'ios-alert-btn'
+                    }
+                });
+            } else {
+                setAlert({ message: 'Failed to delete office', type: 'error' });
+            }
         }
     };
 
@@ -197,14 +278,54 @@ const AdminLists = () => {
     };
 
     const handleDeleteStatus = async (id) => {
-        if (!confirm('Are you sure you want to delete this employment status?')) return;
+        const result = await Swal.fire({
+            title: 'Delete Status?',
+            text: 'Are you sure you want to delete this employment status?',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#8e8e93',
+            reverseButtons: true,
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showClass: { popup: 'animate__animated animate__fadeIn' },
+            hideClass: { popup: 'animate__animated animate__fadeOut' },
+            customClass: {
+                popup: 'ios-alert-popup',
+                title: 'ios-alert-title',
+                confirmButton: 'ios-alert-btn-danger',
+                cancelButton: 'ios-alert-btn-cancel',
+                actions: 'ios-alert-actions'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await axios.delete(`/api/employment-status/${id}`);
             setAlert({ message: 'Employment status deleted successfully', type: 'success' });
             fetchAllData();
         } catch (error) {
-            setAlert({ message: 'Failed to delete employment status', type: 'error' });
+            if (error.response?.status === 422) {
+                Swal.fire({
+                    title: 'Cannot Delete',
+                    text: error.response.data.message || 'This employment status is in use and cannot be deleted.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007aff',
+                    background: '#fff',
+                    backdrop: 'rgba(0,0,0,0.4)',
+                    showClass: { popup: 'animate__animated animate__fadeIn' },
+                    hideClass: { popup: 'animate__animated animate__fadeOut' },
+                    customClass: {
+                        popup: 'ios-alert-popup',
+                        title: 'ios-alert-title',
+                        confirmButton: 'ios-alert-btn'
+                    }
+                });
+            } else {
+                setAlert({ message: 'Failed to delete employment status', type: 'error' });
+            }
         }
     };
 

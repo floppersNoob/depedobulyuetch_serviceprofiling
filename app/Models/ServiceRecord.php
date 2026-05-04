@@ -8,7 +8,7 @@ class ServiceRecord extends Model
 {
     protected $primaryKey = 'service_id';
 
-    protected $fillable = ['employee_id', 'position_id', 'status_id', 'office_id', 'date_from', 'date_to', 'station_place', 'branch'];
+    protected $fillable = ['employee_id', 'position_id', 'status_id', 'office_id', 'date_from', 'date_to', 'station_place', 'branch', 'remarks'];
 
     public function employee()
     {

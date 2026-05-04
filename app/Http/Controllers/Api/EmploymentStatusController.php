@@ -60,6 +60,15 @@ class EmploymentStatusController extends Controller
     public function destroy(string $id)
     {
         $status = EmploymentStatus::findOrFail($id);
+
+        // Check if status is in use by service records
+        $usageCount = \App\Models\ServiceRecord::where('status_id', $id)->count();
+        if ($usageCount > 0) {
+            return response()->json([
+                'message' => "Cannot delete status '{$status->status_name}' because it is used in {$usageCount} service record(s)."
+            ], 422);
+        }
+
         $name = $status->status_name;
         $status->delete();
 

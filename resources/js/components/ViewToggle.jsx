@@ -2,13 +2,11 @@ import React from 'react';
 
 const ViewToggle = ({ currentView, onViewChange, onPrint }) => {
     return (
-        <div className="bg-white shadow rounded-lg p-4 mb-6">
-            <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                    <span className="text-sm font-medium text-gray-700">View:</span>
-                    
-                    {/* Toggle Switch */}
-                    <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium text-gray-700">View:</span>
+            
+            {/* Toggle Switch */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
 
                          <button
                             onClick={() => onViewChange('timeline')}
@@ -42,8 +40,6 @@ const ViewToggle = ({ currentView, onViewChange, onPrint }) => {
                             </div>
                         </button>
                     </div>
-                </div>
-            </div>
         </div>
     );
 };

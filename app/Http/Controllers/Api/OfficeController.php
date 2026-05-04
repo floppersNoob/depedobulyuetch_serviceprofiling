@@ -74,6 +74,15 @@ class OfficeController extends Controller
     public function destroy(string $id)
     {
         $office = Office::findOrFail($id);
+
+        // Check if office is in use by service records
+        $usageCount = \App\Models\ServiceRecord::where('office_id', $id)->count();
+        if ($usageCount > 0) {
+            return response()->json([
+                'message' => "Cannot delete office '{$office->department}' because it is used in {$usageCount} service record(s)."
+            ], 422);
+        }
+
         $dept = $office->department;
         $office->delete();
 

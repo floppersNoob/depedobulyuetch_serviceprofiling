@@ -24,6 +24,9 @@ const EmployeeShow = () => {
     const [editingServiceRecordId, setEditingServiceRecordId] = useState(null);
     const [isEmployeeEditModalOpen, setIsEmployeeEditModalOpen] = useState(false);
     const [viewMode, setViewMode] = useState('timeline'); // 'table' or 'timeline'
+    const [selectedYear, setSelectedYear] = useState('all');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         fetchEmployee();
@@ -33,6 +36,7 @@ const EmployeeShow = () => {
         try {
             const response = await axios.get(`/api/employees/${id}`);
             setEmployee(response.data);
+            setCurrentPage(1); // Reset to first page on load
         } catch (error) {
             setAlert({ message: 'Failed to load employee', type: 'error' });
         }
@@ -45,6 +49,7 @@ const EmployeeShow = () => {
         try {
             await axios.delete(`/api/service-records/${recordId}`);
             setAlert({ message: 'Service record deleted successfully', type: 'success' });
+            setCurrentPage(1); // Reset to first page after delete
             fetchEmployee();
         } catch (error) {
             setAlert({ message: 'Failed to delete service record', type: 'error' });
@@ -102,6 +107,7 @@ const EmployeeShow = () => {
 
     const handleConfirmImport = async () => {
         setImporting(true);
+        setCurrentPage(1); // Reset to first page after import
         try {
             const response = await axios.post(`/reports/service-record/${id}/confirm`, {
                 records: parsedRecords
@@ -221,10 +227,10 @@ const EmployeeShow = () => {
             maximumFractionDigits: 2
         });
         const unitLabels = {
-            daily: 'daily',
-            monthly: 'monthly',
-            annually: 'annually',
-            annual: 'annually'
+            daily: 'd',
+            monthly: 'mo',
+            annually: 'yr',
+            annual: 'yr'
         };
         return `${formatted}/${unitLabels[unit] || unit}`;
     };
@@ -330,107 +336,198 @@ const EmployeeShow = () => {
                     </div>
                     <div className="p-6">
 
-                {/* View Toggle */}
+                {/* View Toggle + Year Filter */}
                 <div className="mb-4">
-                    <ViewToggle 
-                        currentView={viewMode}
-                        onViewChange={setViewMode}
-                    />
+                    <div className="bg-white shadow rounded-lg p-4">
+                        <div className="flex justify-between items-center flex-wrap gap-3">
+                            <ViewToggle 
+                                currentView={viewMode}
+                                onViewChange={setViewMode}
+                            />
+                            {employee.service_records && employee.service_records.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm font-medium text-gray-700">Year:</span>
+                                    <select
+                                        value={selectedYear}
+                                        onChange={(e) => {
+                                            setSelectedYear(e.target.value);
+                                            setCurrentPage(1);
+                                        }}
+                                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="all">All Years</option>
+                                        {[...new Set(employee.service_records.flatMap(r => {
+                                            const start = new Date(r.date_from).getFullYear();
+                                            const end = r.date_to ? new Date(r.date_to).getFullYear() : new Date().getFullYear();
+                                            const years = [];
+                                            for (let y = start; y <= end; y++) years.push(y);
+                                            return years;
+                                        }))]
+                                            .sort((a, b) => b - a)
+                                            .map(year => (
+                                                <option key={year} value={year}>{year}</option>
+                                            ))
+                                        }
+                                    </select>
+                                    <button
+                                        onClick={() => setSelectedYear('all')}
+                                        className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                                            selectedYear !== 'all'
+                                                ? 'bg-white text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
+                                                : 'bg-gray-50 text-gray-300 border-gray-200 cursor-default'
+                                        }`}
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
 
-                {!employee.service_records || employee.service_records.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">
-                        No service records found.
-                    </p>
-                ) : (
+                {(() => {
+                    const filteredRecords = selectedYear === 'all'
+                        ? employee.service_records
+                        : employee.service_records.filter(r => {
+                            const year = parseInt(selectedYear);
+                            const startYear = new Date(r.date_from).getFullYear();
+                            const endYear = r.date_to ? new Date(r.date_to).getFullYear() : new Date().getFullYear();
+                            return year >= startYear && year <= endYear;
+                        });
+
+                    // Pagination logic for table view
+                    const totalPages = Math.ceil((filteredRecords?.length || 0) / itemsPerPage);
+                    const startIndex = (currentPage - 1) * itemsPerPage;
+                    const endIndex = startIndex + itemsPerPage;
+                    const paginatedRecords = filteredRecords?.slice(startIndex, endIndex) || [];
+
+                    return (!filteredRecords || filteredRecords.length === 0) ? (
+                        <p className="text-gray-500 text-center py-4">
+                            No service records found{selectedYear !== 'all' ? ` for ${selectedYear}` : ''}.
+                        </p>
+                    ) : (
                     <div>
                         {viewMode === 'table' ? (
+                            <>
                             <div>
-                                <table className="w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period (mm/dd/yyyy)</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Designation</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Salary</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station/Place</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leave w/o Pay</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Date</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Separation Cause</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                <table className="w-full text-xs border-collapse table-fixed">
+                                    <thead>
+                                        <tr className="bg-gray-50 border-b border-gray-200">
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">From</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">To</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Pos</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Status</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Station</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Branch</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Salary</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">LWOP</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Sep. Dt</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Sep. Cause</th>
+                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Remarks</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-semibold text-gray-600 uppercase">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {employee.service_records.map((record) => (
-                                            <tr key={record.service_id}>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                                    {formatDate(record.date_from)}
-                                                    {record.date_to
-                                                        ? ` - ${formatDate(record.date_to)}`
-                                                        : ' - Present'
-                                                    }
+                                    <tbody className="divide-y divide-gray-200">
+                                        {paginatedRecords.map((record, index) => (
+                                            <tr key={record.service_id} className={`hover:bg-gray-50 transition-colors ${index % 2 !== 0 ? 'bg-gray-50/30' : ''}`}>
+                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">{formatDate(record.date_from)}</td>
+                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">{record.date_to ? formatDate(record.date_to) : <span className="text-emerald-600 font-medium">Present</span>}</td>
+                                                <td className="px-2 py-2 text-gray-900 text-[11px] font-medium truncate" title={record.position?.position_name || ''}>{record.position?.position_name || '-'}</td>
+                                                <td className="px-2 py-2">
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                                        record.employment_status?.status_name === 'Permanent' || record.employment_status?.status_name === 'Perm.'
+                                                            ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                                            : record.employment_status?.status_name === 'Casual'
+                                                                ? 'bg-green-100 text-green-700 border-green-200'
+                                                                : record.employment_status?.status_name === 'Contract'
+                                                                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                                                    : 'bg-gray-100 text-gray-600 border-gray-200'
+                                                    }`}>
+                                                        {record.employment_status?.status_name?.substring(0, 4) || 'N/A'}
+                                                    </span>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm">
-                                                    {record.position?.position_name || '-'}
-                                                </td>
-
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                                                    {record.employment_status?.status_name || '-'}
-                                                </td>
-                                                
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.office?.department || ''}>{record.office?.department || '-'}</td>
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.office?.branch || ''}>{record.office?.branch || '-'}</td>
+                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">
                                                     {record.salary_histories && record.salary_histories.length > 0
                                                         ? formatSalary(record.salary_histories[0].amount, record.salary_histories[0].rate_unit)
                                                         : '-'
                                                     }
                                                 </td>
-
-                                                <td className="px-4 py-3 text-sm">
-                                                    {record.office?.department || '-'}
-                                                </td>
-
-                                                <td className="px-4 py-3 text-sm">{record.office?.branch || '-'}</td>
-
-                                                <td className="px-4 py-3 text-sm">
-                                                    {record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}
-                                                </td>
-
-                                                <td className="px-4 py-3 text-sm">
-                                                    {formatDate(record.separation_record?.separation_date)}
-                                                </td>
-
-                                                <td className="px-4 py-3 text-sm">
-                                                    {record.separation_record?.cause || '-'}
-                                                </td>
-                                                <td className="px-4 py-3 whitespace-nowrap text-sm space-x-2">
-                                                    <button
-                                                        onClick={() => openEditModal(record.service_id)}
-                                                        className="bg-green-600 text-white px-3 py-2 h-8 rounded hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md text-xs font-medium"
-                                                    >
-                                                        <i className="fas fa-edit mr-1"></i>
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteServiceRecord(record.service_id)}
-                                                        className="bg-red-600 text-white px-3 py-2 h-8 rounded hover:bg-red-700 transition-all duration-200 shadow-sm hover:shadow-md text-xs font-medium"
-                                                    >
-                                                        <i className="fas fa-trash mr-1"></i>
-                                                        Delete
-                                                    </button>
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : ''}>{record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}</td>
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] whitespace-nowrap">{record.separation_record?.separation_date ? formatDate(record.separation_record.separation_date) : '-'}</td>
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.separation_record?.separation_date ? (record.separation_record.cause || '') : ''}>{record.separation_record?.separation_date ? (record.separation_record.cause || '-') : '-'}</td>
+                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.remarks || ''}>{record.remarks || '-'}</td>
+                                                <td className="px-2 py-2">
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <button
+                                                            onClick={() => openEditModal(record.service_id)}
+                                                            className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 transition-all duration-200 shadow-sm text-xs font-medium w-full"
+                                                        >
+                                                            <i className="fas fa-edit mr-1"></i> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteServiceRecord(record.service_id)}
+                                                            className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 transition-all duration-200 shadow-sm text-xs font-medium w-full"
+                                                        >
+                                                            <i className="fas fa-trash mr-1"></i> Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-4 px-2">
+                                    <div className="text-sm text-gray-600">
+                                        Showing {startIndex + 1} to {Math.min(endIndex, filteredRecords.length)} of {filteredRecords.length} records
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                            disabled={currentPage === 1}
+                                            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Previous
+                                        </button>
+                                        <div className="flex items-center gap-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
+                                                        currentPage === page
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'border-gray-300 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            </>
                         ) : (
                             <div id="employment-timeline">
-                                <EmploymentTimeline serviceRecords={employee.service_records} />
+                                <EmploymentTimeline serviceRecords={filteredRecords} />
                             </div>
                         )}
                     </div>
-                )}
+                );
+                })()}
             </div>
             </div>
 

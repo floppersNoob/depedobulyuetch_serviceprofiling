@@ -30,7 +30,8 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
         station_place: '',
         branch: '',
         date_from: '',
-        date_to: ''
+        date_to: '',
+        remarks: ''
     });
 
     // Salary - amount and unit only, no calculations
@@ -65,7 +66,8 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 station_place: '',
                 branch: '',
                 date_from: '',
-                date_to: ''
+                date_to: '',
+                remarks: ''
             });
             setSalaryAmount('');
             setLeaveData({ leave_type: '', date_from: '', date_to: '' });
@@ -83,7 +85,8 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 station_place: '',
                 branch: '',
                 date_from: '',
-                date_to: ''
+                date_to: '',
+                remarks: ''
             });
             setSalaryAmount('');
             setLeaveData({ leave_type: '', date_from: '', date_to: '' });
@@ -107,7 +110,6 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
             setStatuses(statRes.data || []);
             setOffices(offRes.data || []);
         } catch (error) {
-            console.error('Failed to load dropdown data', error);
         }
     };
 
@@ -123,7 +125,8 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 station_place: record.office?.station_place || record.office?.department || '',
                 branch: record.office?.branch || '',
                 date_from: formatDateForInput(record.date_from),
-                date_to: formatDateForInput(record.date_to)
+                date_to: formatDateForInput(record.date_to),
+                remarks: record.remarks || ''
             });
             // Load existing salary if any
             if (record.salary_histories && record.salary_histories.length > 0) {
@@ -598,6 +601,21 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                                 className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
+                    </div>
+                </div>
+
+                {/* REMARKS (Optional) */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Remarks (Optional)</h2>
+                    <div>
+                        <input
+                            type="text"
+                            name="remarks"
+                            value={formData.remarks}
+                            onChange={handleChange}
+                            placeholder="e.g., NOSI SG 5-2"
+                            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
                 </div>
 

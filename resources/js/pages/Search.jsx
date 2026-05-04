@@ -26,7 +26,6 @@ const Search = () => {
             const response = await axios.get('/api/positions');
             setPositions(response.data || []);
         } catch (error) {
-            console.error('Failed to load positions', error);
         }
     };
 

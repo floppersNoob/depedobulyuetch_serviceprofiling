@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import Pagination from '../components/Pagination.jsx';
 import { useToast } from '../components/Toast.jsx';
 import EmployeeForm from './EmployeeForm.jsx';
@@ -113,7 +114,6 @@ const EmployeeList = () => {
                 employeesCache.page = page;
             }
         } catch (error) {
-            console.error('Fetch error:', error);
             if (!backgroundRefresh) {
                 addToast('Failed to load employees', 'error');
             }
@@ -145,7 +145,6 @@ const EmployeeList = () => {
             setPositions(positionsRes.data);
             setStatuses(statusesRes.data);
         } catch (error) {
-            console.error('Failed to fetch filter data:', error);
         }
     };
 
@@ -218,17 +217,72 @@ const EmployeeList = () => {
     }, [employees, filters]);
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this employee?')) return;
+        const result = await Swal.fire({
+            title: 'Delete Employee?',
+            text: 'Are you sure you want to delete this employee? This action cannot be undone.',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#8e8e93',
+            reverseButtons: true,
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showClass: { popup: 'animate__animated animate__fadeIn' },
+            hideClass: { popup: 'animate__animated animate__fadeOut' },
+            customClass: {
+                popup: 'ios-alert-popup',
+                title: 'ios-alert-title',
+                confirmButton: 'ios-alert-btn-danger',
+                cancelButton: 'ios-alert-btn-cancel',
+                actions: 'ios-alert-actions'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await axios.delete(`/api/employees/${id}`);
-            addToast('Employee deleted successfully', 'success');
-            // Clear cache to force fresh data
+            Swal.fire({
+                title: 'Deleted',
+                text: 'Employee has been deleted successfully.',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#007aff',
+                background: '#fff',
+                backdrop: 'rgba(0,0,0,0.4)',
+                timer: 2000,
+                timerProgressBar: true,
+                showClass: { popup: 'animate__animated animate__fadeIn' },
+                hideClass: { popup: 'animate__animated animate__fadeOut' },
+                customClass: {
+                    popup: 'ios-alert-popup',
+                    title: 'ios-alert-title',
+                    confirmButton: 'ios-alert-btn'
+                }
+            });
             employeesCache.data = null;
             employeesCache.timestamp = 0;
             fetchEmployees(1, search, false);
         } catch (error) {
-            addToast('Failed to delete employee', 'error');
+            if (error.response?.status === 422) {
+                Swal.fire({
+                    title: 'Cannot Delete',
+                    text: error.response.data.message || 'This employee cannot be deleted.',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#007aff',
+                    background: '#fff',
+                    backdrop: 'rgba(0,0,0,0.4)',
+                    showClass: { popup: 'animate__animated animate__fadeIn' },
+                    hideClass: { popup: 'animate__animated animate__fadeOut' },
+                    customClass: {
+                        popup: 'ios-alert-popup',
+                        title: 'ios-alert-title',
+                        confirmButton: 'ios-alert-btn'
+                    }
+                });
+            } else {
+                addToast('Failed to delete employee', 'error');
+            }
         }
     };
 
