@@ -11,8 +11,17 @@ use App\Http\Controllers\Api\LeaveRecordController;
 use App\Http\Controllers\Api\SeparationRecordController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\Api\PublicEmployeeController;
 use Illuminate\Support\Facades\Route;
 
+// Public API routes (no auth required)
+Route::get('/public/employees', [PublicEmployeeController::class, 'index']);
+Route::get('/public/employees/{id}', [PublicEmployeeController::class, 'show']);
+Route::get('/public/offices', [OfficeController::class, 'index']);
+Route::get('/public/positions', [PositionController::class, 'index']);
+Route::get('/public/employment-status', [EmploymentStatusController::class, 'index']);
+
+// Protected API routes
 Route::apiResource('employees', EmployeeController::class);
 
 Route::apiResource('service-records', ServiceRecordController::class);

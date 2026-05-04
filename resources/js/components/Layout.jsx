@@ -85,6 +85,15 @@ const Layout = () => {
                                     <span>{item.label}</span>
                                 </Link>
                             ))}
+                            {/* Logout Button */}
+                            <a
+                                href="/logout"
+                                className="ml-2 px-4 h-9 flex items-center justify-center gap-2 rounded-xl bg-[#ff3b30]/10 text-[#ff3b30] hover:bg-[#ff3b30]/20 transition-all text-sm font-medium"
+                                title="Logout"
+                            >
+                                <i className="fas fa-sign-out-alt text-sm"></i>
+                                <span>Logout</span>
+                            </a>
                         </div>
 
                         {/* Mobile Menu Button */}
@@ -114,6 +123,14 @@ const Layout = () => {
                                     <span>{item.label}</span>
                                 </Link>
                             ))}
+                            {/* Mobile Logout Button */}
+                            <a
+                                href="/logout"
+                                className="block text-[#ff3b30] hover:bg-[#ff3b30]/10 px-4 py-3 rounded-xl text-base font-medium flex items-center space-x-3 transition-all duration-200"
+                            >
+                                <i className="fas fa-sign-out-alt text-sm"></i>
+                                <span>Logout</span>
+                            </a>
                         </div>
                     </div>
                 )}

@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import EmployeeList from './pages/EmployeeList.jsx';
 import EmployeeForm from './pages/EmployeeForm.jsx';
 import EmployeeShow from './pages/EmployeeShow.jsx';
+import EmployeeView from './pages/EmployeeView.jsx';
 import ServiceRecordForm from './pages/ServiceRecordForm.jsx';
 import ServiceRecordDetail from './pages/ServiceRecordDetail.jsx';
 import AdminLists from './pages/AdminLists.jsx';
@@ -23,6 +24,7 @@ const App = () => {
                     <Route path="employees/create" element={<EmployeeForm />} />
                     <Route path="employees/:id/edit" element={<EmployeeForm />} />
                     <Route path="employees/:id" element={<EmployeeShow />} />
+                    <Route path="employees/:id/view" element={<EmployeeView />} />
                     <Route path="service-records/create" element={<ServiceRecordForm />} />
                     <Route path="service-records/:id/edit" element={<ServiceRecordForm />} />
                     <Route path="service-records/:id" element={<ServiceRecordDetail />} />
