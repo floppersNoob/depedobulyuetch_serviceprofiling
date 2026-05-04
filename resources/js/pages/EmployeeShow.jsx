@@ -44,15 +44,35 @@ const EmployeeShow = () => {
     };
 
     const handleDeleteServiceRecord = async (recordId) => {
-        if (!confirm('Are you sure you want to delete this service record?')) return;
+        const result = await Swal.fire({
+            title: 'Delete Record?',
+            text: 'Are you sure you want to delete this service record?',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#ff3b30',
+            cancelButtonColor: '#8e8e93',
+            reverseButtons: true,
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showClass: { popup: 'animate__animated animate__fadeIn' },
+            hideClass: { popup: 'animate__animated animate__fadeOut' },
+            customClass: {
+                popup: 'ios-alert-popup',
+                title: 'ios-alert-title',
+                confirmButton: 'ios-alert-btn-danger',
+                cancelButton: 'ios-alert-btn-cancel',
+                actions: 'ios-alert-actions'
+            }
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             await axios.delete(`/api/service-records/${recordId}`);
-            setAlert({ message: 'Service record deleted successfully', type: 'success' });
-            setCurrentPage(1); // Reset to first page after delete
+            setCurrentPage(1);
             fetchEmployee();
         } catch (error) {
-            setAlert({ message: 'Failed to delete service record', type: 'error' });
         }
     };
 
@@ -236,25 +256,25 @@ const EmployeeShow = () => {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
             <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                    <i className="fas fa-spinner fa-spin text-gray-600 text-2xl"></i>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/80 backdrop-blur-xl rounded-2xl mb-4 shadow-sm border border-gray-200/50">
+                    <i className="fas fa-spinner fa-spin text-[#007aff] text-2xl"></i>
                 </div>
-                <p className="text-gray-600 font-medium">Loading employee information...</p>
+                <p className="text-gray-500 font-medium text-sm tracking-wide">Loading...</p>
             </div>
         </div>
     );
     
     if (!employee) return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-white">
             <div className="text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
-                    <i className="fas fa-exclamation-triangle text-gray-600 text-2xl"></i>
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/80 backdrop-blur-xl rounded-2xl mb-4 shadow-sm border border-gray-200/50">
+                    <i className="fas fa-exclamation-triangle text-[#ff9500] text-2xl"></i>
                 </div>
-                <p className="text-gray-600 font-medium">Employee not found</p>
-                <Link to="/employees" className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-800">
-                    <i className="fas fa-arrow-left mr-2"></i>
+                <p className="text-gray-500 font-medium text-sm tracking-wide">Employee not found</p>
+                <Link to="/employees" className="mt-4 inline-flex items-center text-[#007aff] hover:text-[#0056b3] font-medium text-sm transition-colors">
+                    <i className="fas fa-chevron-left mr-2 text-xs"></i>
                     Back to Employees
                 </Link>
             </div>
@@ -262,83 +282,88 @@ const EmployeeShow = () => {
     );
 
     return (
-        <div className="min-h-screen">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="min-h-screen bg-gradient-to-b from-gray-50/80 to-white">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 {alert?.type === 'error' && <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />}
 
                 {/* Navigation Header */}
-                <div className="mb-4">
+                <div className="mb-5">
                     <Link 
                         to="/employees" 
-                        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+                        className="inline-flex items-center text-[#007aff] hover:text-[#0056b3] font-medium text-sm transition-colors"
                     >
-                        <i className="fas fa-arrow-left mr-2"></i>
-                        Back to List of Employees
+                        <i className="fas fa-chevron-left mr-2 text-xs"></i>
+                        Employees
                     </Link>
                 </div>
                 
-                {/* Employee Info Card */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h1 className="text-2xl font-bold text-[#010066] mb-2">
-                                {employee.surname}, {employee.given_name} {employee.middle_name}
-                            </h1>
-                            <p className="text-gray-500 text-sm">
-                                {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
-                                {employee.birth_place && ` in ${employee.birth_place}`}
-                            </p>
+                {/* Employee Info Card - iOS style */}
+                <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 p-5 mb-5 shadow-sm">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-[#007aff] to-[#5856d6] rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md">
+                                {employee.given_name?.[0]}{employee.surname?.[0]}
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+                                    {employee.surname}, {employee.given_name} {employee.middle_name}
+                                </h1>
+                                <p className="text-gray-400 text-sm mt-0.5">
+                                    {employee.birth_date && `Born ${new Date(employee.birth_date).toLocaleDateString()}`}
+                                    {employee.birth_place && ` · ${employee.birth_place}`}
+                                </p>
+                            </div>
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={handlePrintPdf}
-                                className="bg-red-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-red-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                                className="bg-[#ff3b30]/10 text-[#ff3b30] px-4 py-2 rounded-xl hover:bg-[#ff3b30]/20 transition-all duration-200 text-sm font-semibold"
                             >
-                                <i className="fas fa-file-pdf mr-2"></i>
-                                Print PDF
+                                <i className="fas fa-file-pdf mr-1.5"></i>
+                                PDF
                             </button>
                             <button
                                 onClick={openEmployeeEditModal}
-                                className="bg-green-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                                className="bg-[#007aff]/10 text-[#007aff] px-4 py-2 rounded-xl hover:bg-[#007aff]/20 transition-all duration-200 text-sm font-semibold"
                             >
-                                <i className="fas fa-edit mr-2"></i>
+                                <i className="fas fa-pencil-alt mr-1.5"></i>
                                 Edit
                             </button>
                         </div>
                     </div>
                 </div>
 
-            {/* Service Records Section */}
-                <div className="bg-white border border-gray-200 rounded-lg">
-                    <div className="px-6 py-4 border-b border-gray-200">
+            {/* Service Records Section - iOS style */}
+                <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-200/60 shadow-sm overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-200/60">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h2 className="text-lg font-semibold text-[#010066]">Service Records</h2>
-                                <p className="text-sm text-gray-500">Employment history and timeline</p>
+                                <h2 className="text-lg font-semibold text-gray-900 tracking-tight">Service Records</h2>
+                                <p className="text-sm text-gray-400 mt-0.5">Employment history</p>
                             </div>
                             <div className="flex gap-2">
                                 <button
                                     onClick={openImportModal}
-                                    className="bg-green-600 text-white px-4 py-3 h-10 rounded-lg hover:bg-green-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                                    className="bg-[#34c759]/10 text-[#34c759] px-4 py-2 rounded-xl hover:bg-[#34c759]/20 transition-all duration-200 text-sm font-semibold"
                                 >
-                                    <i className="fas fa-file-excel mr-2"></i>
-                                    Import Excel
+                                    <i className="fas fa-file-excel mr-1.5"></i>
+                                    Import
                                 </button>
                                 <button
                                     onClick={openAddModal}
-                                    className="bg-[#010066] text-white px-4 py-3 h-10 rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                                    className="bg-[#007aff] text-white px-4 py-2 rounded-xl hover:bg-[#0056b3] transition-all duration-200 text-sm font-semibold shadow-sm"
                                 >
-                                    <i className="fas fa-plus mr-2"></i>
-                                    Add Service Record
+                                    <i className="fas fa-plus mr-1.5"></i>
+                                    Add
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div className="p-6">
+                    <div className="p-5">
 
                 {/* View Toggle + Year Filter */}
                 <div className="mb-4">
-                    <div className="bg-white shadow rounded-lg p-4">
+                    <div className="bg-gray-50/80 rounded-xl p-3 border border-gray-200/40">
                         <div className="flex justify-between items-center flex-wrap gap-3">
                             <ViewToggle 
                                 currentView={viewMode}
@@ -346,14 +371,13 @@ const EmployeeShow = () => {
                             />
                             {employee.service_records && employee.service_records.length > 0 && (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-gray-700">Year:</span>
                                     <select
                                         value={selectedYear}
                                         onChange={(e) => {
                                             setSelectedYear(e.target.value);
                                             setCurrentPage(1);
                                         }}
-                                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="border border-gray-200/80 rounded-xl px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                     >
                                         <option value="all">All Years</option>
                                         {[...new Set(employee.service_records.flatMap(r => {
@@ -369,16 +393,14 @@ const EmployeeShow = () => {
                                             ))
                                         }
                                     </select>
-                                    <button
-                                        onClick={() => setSelectedYear('all')}
-                                        className={`px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${
-                                            selectedYear !== 'all'
-                                                ? 'bg-white text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-300'
-                                                : 'bg-gray-50 text-gray-300 border-gray-200 cursor-default'
-                                        }`}
-                                    >
-                                        Clear
-                                    </button>
+                                    {selectedYear !== 'all' && (
+                                        <button
+                                            onClick={() => { setSelectedYear('all'); setCurrentPage(1); }}
+                                            className="w-7 h-7 flex items-center justify-center rounded-full bg-gray-200/80 hover:bg-[#ff3b30]/10 hover:text-[#ff3b30] transition-colors text-gray-400"
+                                        >
+                                            <i className="fas fa-times text-xs"></i>
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -402,75 +424,82 @@ const EmployeeShow = () => {
                     const paginatedRecords = filteredRecords?.slice(startIndex, endIndex) || [];
 
                     return (!filteredRecords || filteredRecords.length === 0) ? (
-                        <p className="text-gray-500 text-center py-4">
-                            No service records found{selectedYear !== 'all' ? ` for ${selectedYear}` : ''}.
-                        </p>
+                        <div className="text-center py-12">
+                            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i className="fas fa-folder-open text-gray-300 text-lg"></i>
+                            </div>
+                            <p className="text-gray-400 text-sm">
+                                No service records{selectedYear !== 'all' ? ` for ${selectedYear}` : ''}
+                            </p>
+                        </div>
                     ) : (
                     <div>
                         {viewMode === 'table' ? (
                             <>
-                            <div>
+                            <div className="rounded-xl overflow-hidden border border-gray-200/60">
                                 <table className="w-full text-xs border-collapse table-fixed">
                                     <thead>
-                                        <tr className="bg-gray-50 border-b border-gray-200">
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">From</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">To</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Pos</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Status</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Station</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Branch</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Salary</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">LWOP</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Sep. Dt</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Sep. Cause</th>
-                                            <th className="px-2 py-2 text-left text-[10px] font-semibold text-gray-600 uppercase">Remarks</th>
-                                            <th className="px-2 py-2 text-center text-[10px] font-semibold text-gray-600 uppercase">Actions</th>
+                                        <tr className="bg-gray-50/80 border-b border-gray-200/60">
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">From</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">To</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Pos</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Station</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Branch</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Salary</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">LWOP</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Sep. Dt</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Sep. Cause</th>
+                                            <th className="px-2 py-2.5 text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Remarks</th>
+                                            <th className="px-2 py-2.5 text-center text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-200">
+                                    <tbody className="divide-y divide-gray-100">
                                         {paginatedRecords.map((record, index) => (
-                                            <tr key={record.service_id} className={`hover:bg-gray-50 transition-colors ${index % 2 !== 0 ? 'bg-gray-50/30' : ''}`}>
-                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">{formatDate(record.date_from)}</td>
-                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">{record.date_to ? formatDate(record.date_to) : <span className="text-emerald-600 font-medium">Present</span>}</td>
-                                                <td className="px-2 py-2 text-gray-900 text-[11px] font-medium truncate" title={record.position?.position_name || ''}>{record.position?.position_name || '-'}</td>
-                                                <td className="px-2 py-2">
-                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                            <tr key={record.service_id} className={`hover:bg-[#007aff]/5 transition-colors`}>
+                                                <td className="px-2 py-2.5 text-gray-900 text-[11px] whitespace-nowrap font-medium">{formatDate(record.date_from)}</td>
+                                                <td className="px-2 py-2.5 text-gray-900 text-[11px] whitespace-nowrap">{record.date_to ? formatDate(record.date_to) : <span className="text-[#34c759] font-semibold bg-[#34c759]/10 px-1.5 py-0.5 rounded-md text-[10px]">Present</span>}</td>
+                                                <td className="px-2 py-2.5 text-gray-900 text-[11px] font-medium truncate" title={record.position?.position_name || ''}>{record.position?.position_name || '-'}</td>
+                                                <td className="px-2 py-2.5">
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-semibold ${
                                                         record.employment_status?.status_name === 'Permanent' || record.employment_status?.status_name === 'Perm.'
-                                                            ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                                            ? 'bg-[#007aff]/10 text-[#007aff]'
                                                             : record.employment_status?.status_name === 'Casual'
-                                                                ? 'bg-green-100 text-green-700 border-green-200'
+                                                                ? 'bg-[#34c759]/10 text-[#34c759]'
                                                                 : record.employment_status?.status_name === 'Contract'
-                                                                    ? 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                                                    : 'bg-gray-100 text-gray-600 border-gray-200'
+                                                                    ? 'bg-[#ff9500]/10 text-[#ff9500]'
+                                                                    : 'bg-gray-100 text-gray-500'
                                                     }`}>
                                                         {record.employment_status?.status_name?.substring(0, 4) || 'N/A'}
                                                     </span>
                                                 </td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.office?.department || ''}>{record.office?.department || '-'}</td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.office?.branch || ''}>{record.office?.branch || '-'}</td>
-                                                <td className="px-2 py-2 text-gray-900 text-[11px] whitespace-nowrap">
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] truncate" title={record.office?.department || ''}>{record.office?.department || '-'}</td>
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] truncate" title={record.office?.branch || ''}>{record.office?.branch || '-'}</td>
+                                                <td className="px-2 py-2.5 text-gray-900 text-[11px] whitespace-nowrap font-medium">
                                                     {record.salary_histories && record.salary_histories.length > 0
                                                         ? formatSalary(record.salary_histories[0].amount, record.salary_histories[0].rate_unit)
                                                         : '-'
                                                     }
                                                 </td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : ''}>{record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}</td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] whitespace-nowrap">{record.separation_record?.separation_date ? formatDate(record.separation_record.separation_date) : '-'}</td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.separation_record?.separation_date ? (record.separation_record.cause || '') : ''}>{record.separation_record?.separation_date ? (record.separation_record.cause || '-') : '-'}</td>
-                                                <td className="px-2 py-2 text-gray-700 text-[11px] truncate" title={record.remarks || ''}>{record.remarks || '-'}</td>
-                                                <td className="px-2 py-2">
-                                                    <div className="flex flex-col items-center gap-1">
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] truncate" title={record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : ''}>{record.leave_records && record.leave_records.length > 0 ? record.leave_records[0].leave_type : '-'}</td>
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] whitespace-nowrap">{record.separation_record?.separation_date ? formatDate(record.separation_record.separation_date) : '-'}</td>
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] truncate" title={record.separation_record?.separation_date ? (record.separation_record.cause || '') : ''}>{record.separation_record?.separation_date ? (record.separation_record.cause || '-') : '-'}</td>
+                                                <td className="px-2 py-2.5 text-gray-500 text-[11px] truncate" title={record.remarks || ''}>{record.remarks || '-'}</td>
+                                                <td className="px-2 py-2.5">
+                                                    <div className="flex items-center justify-center gap-1">
                                                         <button
                                                             onClick={() => openEditModal(record.service_id)}
-                                                            className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 transition-all duration-200 shadow-sm text-xs font-medium w-full"
+                                                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#007aff]/10 text-[#007aff] hover:bg-[#007aff]/20 transition-all duration-200"
+                                                            title="Edit"
                                                         >
-                                                            <i className="fas fa-edit mr-1"></i> Edit
+                                                            <i className="fas fa-pencil-alt text-[10px]"></i>
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeleteServiceRecord(record.service_id)}
-                                                            className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 transition-all duration-200 shadow-sm text-xs font-medium w-full"
+                                                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#ff3b30]/10 text-[#ff3b30] hover:bg-[#ff3b30]/20 transition-all duration-200"
+                                                            title="Delete"
                                                         >
-                                                            <i className="fas fa-trash mr-1"></i> Delete
+                                                            <i className="fas fa-trash text-[10px]"></i>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -482,39 +511,37 @@ const EmployeeShow = () => {
 
                             {/* Pagination Controls */}
                             {totalPages > 1 && (
-                                <div className="flex items-center justify-between mt-4 px-2">
-                                    <div className="text-sm text-gray-600">
-                                        Showing {startIndex + 1} to {Math.min(endIndex, filteredRecords.length)} of {filteredRecords.length} records
+                                <div className="flex items-center justify-between mt-4 px-1">
+                                    <div className="text-xs text-gray-400">
+                                        {startIndex + 1}–{Math.min(endIndex, filteredRecords.length)} of {filteredRecords.length}
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                             disabled={currentPage === 1}
-                                            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100/80 hover:bg-gray-200/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-500 text-xs"
                                         >
-                                            Previous
+                                            <i className="fas fa-chevron-left"></i>
                                         </button>
-                                        <div className="flex items-center gap-1">
-                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                                                <button
-                                                    key={page}
-                                                    onClick={() => setCurrentPage(page)}
-                                                    className={`px-3 py-1.5 text-sm border rounded-lg transition-colors ${
-                                                        currentPage === page
-                                                            ? 'bg-blue-600 text-white border-blue-600'
-                                                            : 'border-gray-300 hover:bg-gray-50'
-                                                    }`}
-                                                >
-                                                    {page}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-medium transition-all ${
+                                                    currentPage === page
+                                                        ? 'bg-[#007aff] text-white shadow-sm'
+                                                        : 'bg-gray-100/80 text-gray-500 hover:bg-gray-200/80'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
                                         <button
                                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                             disabled={currentPage === totalPages}
-                                            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100/80 hover:bg-gray-200/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-gray-500 text-xs"
                                         >
-                                            Next
+                                            <i className="fas fa-chevron-right"></i>
                                         </button>
                                     </div>
                                 </div>

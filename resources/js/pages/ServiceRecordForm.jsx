@@ -333,43 +333,49 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
 
     const isCasual = selectedStatus?.status_name?.toLowerCase() === 'casual';
 
-    if (loading) return <div className="text-center py-8">Loading...</div>;
+    if (loading) return (
+        <div className="flex items-center justify-center py-12">
+            <div className="w-12 h-12 bg-white/80 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-sm border border-gray-200/50">
+                <i className="fas fa-spinner fa-spin text-[#007aff] text-xl"></i>
+            </div>
+        </div>
+    );
 
     const formContent = (
         <>
             <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
             
-            <div className="flex justify-between items-center p-6 border-b border-gray-200/50">
+            <div className="flex justify-between items-center p-5 border-b border-gray-200/50">
                 <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-lg">
-                        <i className="fas fa-edit"></i>
+                    <div className="bg-gradient-to-br from-[#007aff] to-[#5856d6] text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md">
+                        <i className="fas fa-edit text-sm"></i>
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-dpwh-blue">
+                        <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
                             {isEdit ? 'Edit Service Record' : 'Add Service Record'}
                         </h2>
-                        <p className="text-sm text-gray-500">
-                            {isEdit ? 'Update existing service record information' : 'Add new service record information'}
+                        <p className="text-xs text-gray-400">
+                            {isEdit ? 'Update service record information' : 'Add new service record'}
                         </p>
                     </div>
                 </div>
                 {isOpen && (
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/80 hover:bg-gray-200/80 transition-colors text-gray-500"
                     >
-                        <i className="fas fa-times"></i>
+                        <i className="fas fa-times text-sm"></i>
                     </button>
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <form onSubmit={handleSubmit} className="p-5 space-y-6">
                 {/* SERVICE SECTION */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Service</h2>
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Service</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-semibold text-gray-700">Date From *</label>
+                            <label className="block text-sm font-medium text-gray-600">Date From <span className="text-[#ff3b30]">*</span></label>
                             <div className="relative">
                                 <input
                                     type="date"
@@ -377,41 +383,41 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                                     value={formData.date_from}
                                     onChange={handleChange}
                                     required
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
+                                    className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                                 />
-                                {errors.date_from && <p className="text-red-500 text-sm mt-1">{errors.date_from[0]}</p>}
+                                {errors.date_from && <p className="text-[#ff3b30] text-xs mt-1">{errors.date_from[0]}</p>}
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="block text-sm font-semibold text-gray-700">Date To (blank if current)</label>
+                            <label className="block text-sm font-medium text-gray-600">Date To <span className="text-gray-400 text-xs">(leave blank if current)</span></label>
                             <div className="relative">
                                 <input
                                     type="date"
                                     name="date_to"
                                     value={formData.date_to}
                                     onChange={handleChange}
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 bg-white/50 hover:bg-white"
+                                    className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                                 />
-                                {errors.date_to && <p className="text-red-500 text-sm mt-1">{errors.date_to[0]}</p>}
+                                {errors.date_to && <p className="text-[#ff3b30] text-xs mt-1">{errors.date_to[0]}</p>}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* RECORD OF APPOINTMENT */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Record of Appointment</h2>
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Record of Appointment</h2>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Employee *</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Employee <span className="text-[#ff3b30]">*</span></label>
                             <select
                                 name="employee_id"
                                 value={formData.employee_id}
                                 onChange={handleChange}
                                 required
                                 disabled={isEdit}
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white disabled:bg-gray-100/50"
                             >
                                 <option value="">Select Employee</option>
                                 {employees.map((emp) => (
@@ -423,9 +429,8 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Designation *
-                                <span className="text-xs text-gray-500 font-normal ml-1">(type or select)</span>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                                Designation <span className="text-[#ff3b30]">*</span>
                             </label>
                             <input
                                 type="text"
@@ -435,7 +440,7 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                                 list="position-options"
                                 required
                                 placeholder="Type or select designation"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             />
                             <datalist id="position-options">
                                 {positions.map((pos) => (
@@ -447,13 +452,13 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Status * (Permanent/Casual)</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Status <span className="text-[#ff3b30]">*</span></label>
                             <select
                                 name="status_id"
                                 value={formData.status_id}
                                 onChange={handleChange}
                                 required
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             >
                                 <option value="">Select Status</option>
                                 {statuses.map((stat) => (
@@ -465,47 +470,46 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                         </div>
 
                         {/* SALARY SECTION */}
-                        <div className="md:col-span-2 bg-gray-50 p-4 rounded">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Salary Amount (Php) *
+                        <div className="md:col-span-2 bg-gray-50/80 rounded-xl p-4 border border-gray-200/40">
+                            <label className="block text-sm font-medium text-gray-600 mb-2">
+                                Salary Amount (Php) <span className="text-[#ff3b30]">*</span>
                             </label>
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center gap-3">
                                 <input
                                     type="number"
                                     value={salaryAmount}
                                     onChange={(e) => setSalaryAmount(e.target.value)}
                                     placeholder="Enter Salary"
-                                    className="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="flex-1 border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                                     required
                                 />
                                 <select
                                     value={rateUnit}
                                     onChange={(e) => setRateUnit(e.target.value)}
-                                    className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-36 border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                                 >
-                                    <option value="">Select Rate Unit</option>
+                                    <option value="">Unit</option>
                                     <option value="daily">Daily</option>
                                     <option value="monthly">Monthly</option>
                                     <option value="annually">Annually</option>
                                 </select>
                             </div>
-                            <p className="text-sm text-gray-500 mt-2">
+                            <p className="text-xs text-gray-400 mt-2">
                                 {isCasual
-                                    ? 'Casual: Salary recorded as daily rate (e.g., 500/d)'
-                                    : 'Permanent: Salary recorded as-is with selected unit'}
+                                    ? 'Casual: Recorded as daily rate'
+                                    : 'Permanent: Recorded with selected unit'}
                             </p>
                         </div>
                     </div>
                 </div>
 
                 {/* OFFICE ENTITY */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Office Entity</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Office Entity</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Station/Place of Assignment *
-                                <span className="text-xs text-gray-500 font-normal ml-1">(type or select)</span>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                                Station/Place <span className="text-[#ff3b30]">*</span>
                             </label>
                             <input
                                 type="text"
@@ -515,7 +519,7 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                                 list="station-options"
                                 required
                                 placeholder="Type or select station/place"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             />
                             <datalist id="station-options">
                                 {offices.map((off) => (
@@ -526,10 +530,7 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                             </datalist>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Branch
-                                <span className="text-xs text-gray-500 font-normal ml-1">(type or select)</span>
-                            </label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Branch</label>
                             <input
                                 type="text"
                                 name="branch"
@@ -537,7 +538,7 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                                 onChange={handleChange}
                                 list="branch-options"
                                 placeholder="Type or select branch"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             />
                             <datalist id="branch-options">
                                 {offices.map((off) => (
@@ -551,62 +552,62 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                 </div>
 
                 {/* LEAVE ABSENCE W/O PAY */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Leave of Absence w/o Pay (Optional)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Leave of Absence w/o Pay <span className="text-gray-400 font-normal normal-case">(Optional)</span></h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <input
                             type="text"
                             placeholder="Leave Type"
                             value={leaveData.leave_type}
                             onChange={(e) => setLeaveData({ ...leaveData, leave_type: e.target.value })}
-                            className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                         />
                         <input
                             type="date"
                             placeholder="From"
                             value={leaveData.date_from}
                             onChange={(e) => setLeaveData({ ...leaveData, date_from: e.target.value })}
-                            className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                         />
                         <input
                             type="date"
                             placeholder="To"
                             value={leaveData.date_to}
                             onChange={(e) => setLeaveData({ ...leaveData, date_to: e.target.value })}
-                            className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                         />
                     </div>
                 </div>
 
                 {/* SEPARATION (Optional) */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Separation (Optional)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Separation <span className="text-gray-400 font-normal normal-case">(Optional)</span></h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Date</label>
                             <input
                                 type="date"
                                 value={separationData.separation_date}
                                 onChange={(e) => setSeparationData({ ...separationData, separation_date: e.target.value })}
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Cause</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Cause</label>
                             <input
                                 type="text"
                                 value={separationData.cause}
                                 onChange={(e) => setSeparationData({ ...separationData, cause: e.target.value })}
-                                placeholder="e.g., Retirement, Resignation, End of Contract"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Retirement, Resignation"
+                                className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* REMARKS (Optional) */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-700 mb-4 border-b pb-2">Remarks (Optional)</h2>
+                <div className="mb-6">
+                    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Remarks <span className="text-gray-400 font-normal normal-case">(Optional)</span></h2>
                     <div>
                         <input
                             type="text"
@@ -614,41 +615,32 @@ const ServiceRecordForm = ({ isOpen, onClose, serviceRecordId: propServiceRecord
                             value={formData.remarks}
                             onChange={handleChange}
                             placeholder="e.g., NOSI SG 5-2"
-                            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all bg-white"
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-3 pt-4 border-t border-gray-200/50">
                     <button
                         type="button"
                         onClick={() => onClose ? onClose() : navigate(formData.employee_id ? `/employees/${formData.employee_id}` : '/employees')}
-                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                        className="px-5 py-2.5 bg-gray-100/80 text-gray-600 rounded-xl hover:bg-gray-200/80 transition-all text-sm font-semibold"
                     >
                         Cancel
                     </button>
                     <button 
                         type="submit" 
-                        className={`bg-blue-600 text-white px-4 py-2 rounded transition-all duration-300 transform ${
-                            submitting 
-                                ? 'bg-blue-400 cursor-not-allowed scale-95' 
-                                : 'hover:bg-blue-700 hover:scale-105 active:scale-95'
-                        }`}
                         disabled={submitting}
+                        className={`px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold flex items-center gap-2 ${
+                            submitting 
+                                ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                                : 'bg-[#007aff] text-white shadow-sm hover:bg-[#0056b3]'
+                        }`}
                     >
-                        {submitting ? (
-                            <span className="flex items-center">
-                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                {isEdit ? 'Updating...' : 'Saving...'}
-                            </span>
-                        ) : (
-                            <span>
-                                {isEdit ? 'Update Service Record' : 'Save Service Record'}
-                            </span>
+                        {submitting && (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                         )}
+                        {submitting ? (isEdit ? 'Updating...' : 'Saving...') : (isEdit ? 'Update' : 'Save')}
                     </button>
                 </div>
             </form>

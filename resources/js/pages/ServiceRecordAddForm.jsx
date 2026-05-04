@@ -192,56 +192,64 @@ Swal.fire({
             ></div>
 
             <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-4xl w-full z-10 max-h-[90vh] overflow-hidden flex flex-col border border-gray-200/50">
-                <div className="flex justify-between items-center p-6 border-b border-gray-200/50 flex-shrink-0">
-                    <h2 className="text-xl font-semibold text-gray-900">Add Service Record</h2>
+                <div className="flex justify-between items-center p-5 border-b border-gray-200/50 flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-gradient-to-br from-[#007aff] to-[#5856d6] text-white rounded-xl w-10 h-10 flex items-center justify-center shadow-md">
+                            <i className="fas fa-plus text-sm"></i>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900 tracking-tight">Add Service Record</h2>
+                            <p className="text-xs text-gray-400">Create new service record</p>
+                        </div>
+                    </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/80 hover:bg-gray-200/80 transition-colors text-gray-500"
                     >
-                        <i className="fas fa-times text-gray-600 text-sm"></i>
+                        <i className="fas fa-times text-sm"></i>
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-4 overflow-y-auto flex-1">
+                <form onSubmit={handleSubmit} className="p-5 overflow-y-auto flex-1">
                     <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
                     
                     {/* SERVICE SECTION */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Service</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Service</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Date From *</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Date From <span className="text-[#ff3b30]">*</span></label>
                                 <input
                                     type="date"
                                     name="date_from"
                                     value={formData.date_from}
                                     onChange={handleChange}
                                     required
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
-                                {errors.date_from && <p className="text-red-500 text-sm mt-1">{errors.date_from[0]}</p>}
+                                {errors.date_from && <p className="text-[#ff3b30] text-xs mt-1">{errors.date_from[0]}</p>}
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Date To <span className="text-gray-400 text-xs">(leave blank if current)</span></label>
                                 <input
                                     type="date"
                                     name="date_to"
                                     value={formData.date_to}
                                     onChange={handleChange}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
-                                {errors.date_to && <p className="text-red-500 text-sm mt-1">{errors.date_to[0]}</p>}
+                                {errors.date_to && <p className="text-[#ff3b30] text-xs mt-1">{errors.date_to[0]}</p>}
                             </div>
                         </div>
                     </div>
 
                     {/* RECORD OF APPOINTMENT */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Record of Appointment</h3>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Record of Appointment</h3>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Designation *</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Designation <span className="text-[#ff3b30]">*</span></label>
                                 <input
                                     type="text"
                                     name="position_id"
@@ -250,7 +258,7 @@ Swal.fire({
                                     list="position-options"
                                     required
                                     placeholder="Type or select designation"
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                                 <datalist id="position-options">
                                     {positions.map((pos) => (
@@ -259,17 +267,17 @@ Swal.fire({
                                         </option>
                                     ))}
                                 </datalist>
-                                {errors.position_id && <p className="text-red-500 text-sm mt-1">{errors.position_id[0]}</p>}
+                                {errors.position_id && <p className="text-[#ff3b30] text-xs mt-1">{errors.position_id[0]}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Status * (Permanent/Casual)</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Status <span className="text-[#ff3b30]">*</span></label>
                                 <select
                                     name="status_id"
                                     value={formData.status_id}
                                     onChange={handleChange}
                                     required
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 >
                                     <option value="">Select Status</option>
                                     {statuses.map((stat) => (
@@ -278,11 +286,11 @@ Swal.fire({
                                         </option>
                                     ))}
                                 </select>
-                                {errors.status_id && <p className="text-red-500 text-sm mt-1">{errors.status_id[0]}</p>}
+                                {errors.status_id && <p className="text-[#ff3b30] text-xs mt-1">{errors.status_id[0]}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Station/Place *</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Station/Place <span className="text-[#ff3b30]">*</span></label>
                                 <input
                                     type="text"
                                     name="station_place"
@@ -291,7 +299,7 @@ Swal.fire({
                                     list="station-options"
                                     required
                                     placeholder="Type or select station/place"
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                                 <datalist id="station-options">
                                     {offices.map((off) => (
@@ -300,11 +308,11 @@ Swal.fire({
                                         </option>
                                     ))}
                                 </datalist>
-                                {errors.station_place && <p className="text-red-500 text-sm mt-1">{errors.station_place[0]}</p>}
+                                {errors.station_place && <p className="text-[#ff3b30] text-xs mt-1">{errors.station_place[0]}</p>}
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Branch</label>
                                 <input
                                     type="text"
                                     name="branch"
@@ -312,7 +320,7 @@ Swal.fire({
                                     onChange={handleChange}
                                     list="branch-options"
                                     placeholder="Type or select branch"
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                                 <datalist id="branch-options">
                                     {offices.map((off) => (
@@ -327,38 +335,38 @@ Swal.fire({
 
                     {/* SALARY */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Salary (Optional)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Salary <span className="text-gray-400 font-normal normal-case">(Optional)</span></h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50/80 rounded-xl p-4 border border-gray-200/40">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Amount</label>
                                 <input
                                     type="number"
                                     value={salaryAmount}
                                     onChange={(e) => setSalaryAmount(e.target.value)}
                                     placeholder="Enter salary amount"
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Rate Unit</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Rate Unit</label>
                                 <select
                                     value={rateUnit}
                                     onChange={(e) => setRateUnit(e.target.value)}
                                     disabled={isCasual}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent disabled:opacity-50"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all disabled:opacity-50"
                                 >
                                     <option value="daily">Daily</option>
                                     <option value="monthly">Monthly</option>
                                     <option value="annually">Annually</option>
                                 </select>
-                                {isCasual && <p className="text-xs text-gray-500 mt-1">Casual employees are paid daily</p>}
+                                {isCasual && <p className="text-xs text-gray-400 mt-1">Casual employees are paid daily</p>}
                             </div>
                         </div>
                     </div>
 
                     {/* LEAVE ABSENCE W/O PAY */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Leave of Absence w/o Pay (Optional)</h3>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Leave of Absence w/o Pay <span className="text-gray-400 font-normal normal-case">(Optional)</span></h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
                                 <input
@@ -366,7 +374,7 @@ Swal.fire({
                                     placeholder="Leave Type"
                                     value={leaveData.leave_type}
                                     onChange={(e) => setLeaveData({ ...leaveData, leave_type: e.target.value })}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                             <div>
@@ -375,7 +383,7 @@ Swal.fire({
                                     placeholder="From"
                                     value={leaveData.date_from}
                                     onChange={(e) => setLeaveData({ ...leaveData, date_from: e.target.value })}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                             <div>
@@ -384,7 +392,7 @@ Swal.fire({
                                     placeholder="To"
                                     value={leaveData.date_to}
                                     onChange={(e) => setLeaveData({ ...leaveData, date_to: e.target.value })}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                         </div>
@@ -392,25 +400,25 @@ Swal.fire({
 
                     {/* SEPARATION (Optional) */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Separation (Optional)</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Separation <span className="text-gray-400 font-normal normal-case">(Optional)</span></h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Date</label>
                                 <input
                                     type="date"
                                     value={separationData.separation_date}
                                     onChange={(e) => setSeparationData({ ...separationData, separation_date: e.target.value })}
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Cause</label>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Cause</label>
                                 <input
                                     type="text"
                                     value={separationData.cause}
                                     onChange={(e) => setSeparationData({ ...separationData, cause: e.target.value })}
-                                    placeholder="e.g., Retirement, Resignation, End of Contract"
-                                    className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                    placeholder="e.g., Retirement, Resignation"
+                                    className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                                 />
                             </div>
                         </div>
@@ -418,7 +426,7 @@ Swal.fire({
 
                     {/* REMARKS (Optional) */}
                     <div className="mb-6">
-                        <h3 className="text-base font-semibold text-gray-700 mb-3">Remarks (Optional)</h3>
+                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Remarks <span className="text-gray-400 font-normal normal-case">(Optional)</span></h3>
                         <div>
                             <input
                                 type="text"
@@ -426,22 +434,22 @@ Swal.fire({
                                 value={formData.remarks}
                                 onChange={handleChange}
                                 placeholder="e.g., NOSI SG 5-2"
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
                         </div>
                     </div>
 
-                    <div className="flex justify-between gap-3 pt-6 border-t border-gray-200/50">
+                    <div className="flex justify-between gap-3 pt-5 border-t border-gray-200/50">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors text-sm font-medium"
+                            className="px-5 py-2.5 bg-gray-100/80 text-gray-600 rounded-xl hover:bg-gray-200/80 transition-all text-sm font-semibold"
                         >
                             Cancel
                         </button>
                         <button 
                             type="submit" 
-                            className="px-6 py-3 bg-gradient-to-r from-[#010066] to-[#000088] text-white rounded-2xl hover:from-[#000055] hover:to-[#000099] transition-all duration-300 text-sm font-semibold shadow-lg hover:shadow-xl"
+                            className="px-5 py-2.5 bg-[#007aff] text-white rounded-xl hover:bg-[#0056b3] transition-all duration-200 text-sm font-semibold shadow-sm"
                         >
                             Save Service Record
                         </button>

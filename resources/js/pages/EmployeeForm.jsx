@@ -212,26 +212,26 @@ const EmployeeForm = ({ isOpen, onClose, employeeId, onSuccess }) => {
             ></div>
 
             <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl max-w-2xl w-full z-10 border border-gray-200/50">
-                <div className="flex justify-between items-center p-6 border-b border-gray-200/50">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                        {isEdit ? 'Edit Employee' : 'Add New Employee'}
+                <div className="flex justify-between items-center p-5 border-b border-gray-200/50">
+                    <h2 className="text-lg font-semibold text-gray-900 tracking-tight">
+                        {isEdit ? 'Edit Employee' : 'Add Employee'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100/80 hover:bg-gray-200/80 transition-colors"
                     >
-                        <i className="fas fa-times text-gray-600 text-sm"></i>
+                        <i className="fas fa-times text-gray-500 text-sm"></i>
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-4">
+                <form onSubmit={handleSubmit} className="p-5">
                     {alert?.message && (
                         <Alert message={alert.message} type={alert.type} onClose={() => setAlert(null)} />
                     )}
 
                     <div className="grid grid-cols-3 gap-3 mb-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Surname *</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Surname <span className="text-[#ff3b30]">*</span></label>
                             <input
                                 type="text"
                                 name="surname"
@@ -239,13 +239,13 @@ const EmployeeForm = ({ isOpen, onClose, employeeId, onSuccess }) => {
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter surname"
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
-                            {errors.surname && <p className="text-red-500 text-sm mt-1">{errors.surname[0]}</p>}
+                            {errors.surname && <p className="text-[#ff3b30] text-xs mt-1">{errors.surname[0]}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Given Name *</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Given Name <span className="text-[#ff3b30]">*</span></label>
                             <input
                                 type="text"
                                 name="given_name"
@@ -253,72 +253,72 @@ const EmployeeForm = ({ isOpen, onClose, employeeId, onSuccess }) => {
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter given name"
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
-                            {errors.given_name && <p className="text-red-500 text-sm mt-1">{errors.given_name[0]}</p>}
+                            {errors.given_name && <p className="text-[#ff3b30] text-xs mt-1">{errors.given_name[0]}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Middle Name</label>
                             <input
                                 type="text"
                                 name="middle_name"
                                 value={formData.middle_name}
                                 onChange={handleChange}
                                 placeholder="Enter middle name"
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Birth Date</label>
                             <input
                                 type="date"
                                 name="birth_date"
                                 value={formData.birth_date}
                                 onChange={handleChange}
                                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
-                            {errors.birth_date && <p className="text-red-500 text-sm mt-1">{errors.birth_date[0]}</p>}
+                            {errors.birth_date && <p className="text-[#ff3b30] text-xs mt-1">{errors.birth_date[0]}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Birth Place</label>
+                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Birth Place</label>
                             <input
                                 type="text"
                                 name="birth_place"
                                 value={formData.birth_place}
                                 onChange={handleChange}
                                 placeholder="Enter birth place"
-                                className="w-full bg-white border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066] focus:border-transparent"
+                                className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
                             />
                         </div>
                     </div>
 
-                    <div className="flex justify-between gap-3 pt-6 border-t border-gray-200/50">
+                    <div className="flex justify-between gap-3 pt-5 border-t border-gray-200/50">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition-colors text-sm font-medium"
+                            className="px-5 py-2.5 bg-gray-100/80 text-gray-600 rounded-xl hover:bg-gray-200/80 transition-all text-sm font-semibold"
                         >
                             Cancel
                         </button>
                         <button 
                             type="submit" 
                             disabled={isSubmitting}
-                            className={`px-6 py-3 rounded-2xl transition-all duration-300 text-sm font-semibold flex items-center gap-2 ${
+                            className={`px-5 py-2.5 rounded-xl transition-all duration-200 text-sm font-semibold flex items-center gap-2 ${
                                 isSubmitting 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : 'bg-gradient-to-r from-[#010066] to-[#000088] text-white shadow-lg hover:shadow-xl hover:from-[#000055] hover:to-[#000099]'
+                                    ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
+                                    : 'bg-[#007aff] text-white shadow-sm hover:bg-[#0056b3]'
                             }`}
                         >
                             {isSubmitting && (
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                             )}
-                            {isSubmitting ? 'Saving...' : (isEdit ? 'Update Employee' : 'Save Employee')}
+                            {isSubmitting ? 'Saving...' : (isEdit ? 'Update' : 'Save')}
                         </button>
                     </div>
                 </form>

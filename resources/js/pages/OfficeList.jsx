@@ -80,135 +80,157 @@ const OfficeList = () => {
         setShowForm(false);
     };
 
-    if (loading) return <div className="text-center py-8">Loading...</div>;
+    if (loading) return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50/80 to-white">
+            <div className="text-center">
+                <div className="w-12 h-12 bg-white/80 backdrop-blur-xl rounded-2xl flex items-center justify-center shadow-sm border border-gray-200/50">
+                    <i className="fas fa-spinner fa-spin text-[#007aff] text-xl"></i>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="bg-white shadow rounded-lg p-6">
-            <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
+        <div className="min-h-screen bg-gradient-to-b from-gray-50/80 to-white p-6">
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl shadow-sm p-6">
+                    <Alert message={alert?.message} type={alert?.type} onClose={() => setAlert(null)} />
 
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Offices</h1>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                    {showForm ? 'Cancel' : 'Add Office'}
-                </button>
-            </div>
-
-            {showForm && (
-                <form onSubmit={handleSubmit} className="mb-6 p-4 bg-gray-50 rounded">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
-                            <input
-                                type="text"
-                                name="department"
-                                value={formData.department}
-                                onChange={handleChange}
-                                required
-                                placeholder="e.g., DPWH"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Division</label>
-                            <input
-                                type="text"
-                                name="division"
-                                value={formData.division}
-                                onChange={handleChange}
-                                placeholder="e.g., CDOC-1ST DE"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Branch</label>
-                            <input
-                                type="text"
-                                name="branch"
-                                value={formData.branch}
-                                onChange={handleChange}
-                                placeholder="e.g., Nat'l"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Station/Place</label>
-                            <input
-                                type="text"
-                                name="station_place"
-                                value={formData.station_place}
-                                onChange={handleChange}
-                                placeholder="e.g., Carmen, Cagayan de Oro City"
-                                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-between mt-4">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Offices</h1>
                         <button
-                            type="button"
-                            onClick={resetForm}
-                            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                            onClick={() => setShowForm(!showForm)}
+                            className={`px-4 py-2.5 rounded-xl transition-all text-sm font-semibold ${
+                                showForm 
+                                    ? 'bg-gray-100/80 text-gray-600 hover:bg-gray-200/80' 
+                                    : 'bg-[#007aff] text-white shadow-sm hover:bg-[#0056b3]'
+                            }`}
                         >
-                            Cancel
-                        </button>
-                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                            {editingOffice ? 'Update Office' : 'Save Office'}
+                            {showForm ? 'Cancel' : 'Add Office'}
                         </button>
                     </div>
-                </form>
-            )}
 
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Division</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Branch</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Station</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {!offices || offices.length === 0 ? (
-                        <tr>
-                            <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No offices found.</td>
-                        </tr>
-                    ) : (
-                        offices.map((office) => (
-                            <tr key={office.office_id}>
-                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">
-                                    {office.department}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {office.division || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {office.branch || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {office.station_place || '-'}
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                    <button
-                                        onClick={() => handleEdit(office)}
-                                        className="text-yellow-600 hover:text-yellow-900"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(office.office_id)}
-                                        className="text-red-600 hover:text-red-900"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
+                    {showForm && (
+                        <form onSubmit={handleSubmit} className="mb-6 p-5 bg-gray-50/80 rounded-xl border border-gray-200/40">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">Department <span className="text-[#ff3b30]">*</span></label>
+                                    <input
+                                        type="text"
+                                        name="department"
+                                        value={formData.department}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="e.g., DPWH"
+                                        className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">Division</label>
+                                    <input
+                                        type="text"
+                                        name="division"
+                                        value={formData.division}
+                                        onChange={handleChange}
+                                        placeholder="e.g., CDOC-1ST DE"
+                                        className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">Branch</label>
+                                    <input
+                                        type="text"
+                                        name="branch"
+                                        value={formData.branch}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Nat'l"
+                                        className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-600 mb-1.5">Station/Place</label>
+                                    <input
+                                        type="text"
+                                        name="station_place"
+                                        value={formData.station_place}
+                                        onChange={handleChange}
+                                        placeholder="e.g., Carmen, Cagayan de Oro City"
+                                        className="w-full bg-white border border-gray-200/80 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-between gap-3 mt-5 pt-4 border-t border-gray-200/50">
+                                <button
+                                    type="button"
+                                    onClick={resetForm}
+                                    className="px-5 py-2.5 bg-gray-100/80 text-gray-600 rounded-xl hover:bg-gray-200/80 transition-all text-sm font-semibold"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="px-5 py-2.5 bg-[#007aff] text-white rounded-xl hover:bg-[#0056b3] transition-all text-sm font-semibold shadow-sm">
+                                    {editingOffice ? 'Update' : 'Save'}
+                                </button>
+                            </div>
+                        </form>
                     )}
-                </tbody>
-            </table>
+
+                    <div className="rounded-xl overflow-hidden border border-gray-200/60">
+                        <table className="min-w-full divide-y divide-gray-100">
+                            <thead className="bg-gray-50/80">
+                                <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Department</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Division</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Branch</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Station</th>
+                                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                {!offices || offices.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="5" className="px-4 py-8 text-center text-gray-400 text-sm">No offices found.</td>
+                                    </tr>
+                                ) : (
+                                    offices.map((office) => (
+                                        <tr key={office.office_id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                                                {office.department}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                {office.division || '-'}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                {office.branch || '-'}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                {office.station_place || '-'}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-right">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    <button
+                                                        onClick={() => handleEdit(office)}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#007aff]/10 text-[#007aff] hover:bg-[#007aff]/20 transition-all"
+                                                        title="Edit"
+                                                    >
+                                                        <i className="fas fa-pencil-alt text-xs"></i>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(office.office_id)}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#ff3b30]/10 text-[#ff3b30] hover:bg-[#ff3b30]/20 transition-all"
+                                                        title="Delete"
+                                                    >
+                                                        <i className="fas fa-trash text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
