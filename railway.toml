@@ -1,0 +1,21 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "php artisan serve --host 0.0.0.0 --port 80"
+healthcheckPath = "/health"
+healthcheckPort = 80
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[deploy.env]
+APP_NAME = "DPWH_ServiceProfiling"
+APP_ENV = "production"
+APP_DEBUG = "false"
+DB_CONNECTION = "sqlite"
+DB_DATABASE = "/var/www/html/database/database.sqlite"
+SESSION_DRIVER = "cookie"
+CACHE_STORE = "file"
+QUEUE_CONNECTION = "sync"
+LOG_CHANNEL = "stderr"
