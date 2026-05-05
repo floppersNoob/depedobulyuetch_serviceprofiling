@@ -13,7 +13,7 @@ class SearchController extends Controller
     {
         $searchType = $request->input('search_type');
 
-        return match($searchType) {
+        return match ($searchType) {
             'employee' => $this->searchByEmployee($request),
             'position' => $this->searchByPosition($request),
             'date_range' => $this->searchByDateRange($request),
@@ -28,8 +28,8 @@ class SearchController extends Controller
         return Employee::withCount('serviceRecords')
             ->where(function ($q) use ($name) {
                 $q->where('surname', 'like', "%{$name}%")
-                  ->orWhere('given_name', 'like', "%{$name}%")
-                  ->orWhere('middle_name', 'like', "%{$name}%");
+                    ->orWhere('given_name', 'like', "%{$name}%")
+                    ->orWhere('middle_name', 'like', "%{$name}%");
             })
             ->orderBy('surname')
             ->paginate(20);

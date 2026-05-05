@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\EmploymentStatus;
 use App\Models\ActivityLog;
+use App\Models\EmploymentStatus;
+use App\Models\ServiceRecord;
 use Illuminate\Http\Request;
 
 class EmploymentStatusController extends Controller
@@ -40,7 +41,7 @@ class EmploymentStatusController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'status_name' => 'required|string|max:255|unique:employment_status,status_name,' . $id . ',status_id',
+            'status_name' => 'required|string|max:255|unique:employment_status,status_name,'.$id.',status_id',
         ]);
 
         $status = EmploymentStatus::findOrFail($id);
@@ -62,10 +63,10 @@ class EmploymentStatusController extends Controller
         $status = EmploymentStatus::findOrFail($id);
 
         // Check if status is in use by service records
-        $usageCount = \App\Models\ServiceRecord::where('status_id', $id)->count();
+        $usageCount = ServiceRecord::where('status_id', $id)->count();
         if ($usageCount > 0) {
             return response()->json([
-                'message' => "Cannot delete status '{$status->status_name}' because it is used in {$usageCount} service record(s)."
+                'message' => "Cannot delete status '{$status->status_name}' because it is used in {$usageCount} service record(s).",
             ], 422);
         }
 

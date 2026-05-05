@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Employee;
 use App\Models\LeaveRecord;
 use App\Models\ServiceRecord;
-use App\Models\Employee;
-use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class LeaveRecordController extends Controller
@@ -14,11 +14,11 @@ class LeaveRecordController extends Controller
     public function index(Request $request)
     {
         $query = LeaveRecord::with('serviceRecord');
-        
+
         if ($request->has('service_id')) {
             $query->where('service_id', $request->input('service_id'));
         }
-        
+
         return $query->orderBy('date_from', 'desc')->get();
     }
 

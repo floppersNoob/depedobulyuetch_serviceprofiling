@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ReportController;
+use Illuminate\Support\Facades\Route;
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

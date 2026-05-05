@@ -20,8 +20,8 @@ class EmployeeController extends Controller
                 foreach ($searchTerms as $term) {
                     $q->where(function ($subQ) use ($term) {
                         $subQ->where('surname', 'like', "%{$term}%")
-                             ->orWhere('given_name', 'like', "%{$term}%")
-                             ->orWhere('middle_name', 'like', "%{$term}%");
+                            ->orWhere('given_name', 'like', "%{$term}%")
+                            ->orWhere('middle_name', 'like', "%{$term}%");
                     });
                 }
             });
@@ -44,9 +44,9 @@ class EmployeeController extends Controller
             $query->where('surname', 'like', "{$alphabet}%");
         }
 
-        return $query->with(['serviceRecords' => function($query) {
-                $query->whereNull('date_to')->orderBy('date_from', 'desc')->limit(1);
-            }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office'])
+        return $query->with(['serviceRecords' => function ($query) {
+            $query->whereNull('date_to')->orderBy('date_from', 'desc')->limit(1);
+        }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office'])
             ->withCount('serviceRecords')
             ->orderBy('surname')
             ->paginate(20);
@@ -58,7 +58,7 @@ class EmployeeController extends Controller
             'surname' => 'required|string|max:255',
             'given_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'birth_date' => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+            'birth_date' => 'nullable|date|before_or_equal:'.now()->subYears(18)->format('Y-m-d'),
             'birth_place' => 'nullable|string|max:255',
         ], [
             'birth_date.before_or_equal' => 'Employee must be at least 18 years old.',
@@ -78,10 +78,11 @@ class EmployeeController extends Controller
 
     public function show(string $id)
     {
-        $employee = Employee::with(['serviceRecords' => function($query) {
-                $query->orderBy('date_from', 'asc');
-            }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office', 'serviceRecords.salaryHistories', 'serviceRecords.leaveRecords', 'serviceRecords.separationRecord'])
+        $employee = Employee::with(['serviceRecords' => function ($query) {
+            $query->orderBy('date_from', 'asc');
+        }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office', 'serviceRecords.salaryHistories', 'serviceRecords.leaveRecords', 'serviceRecords.separationRecord'])
             ->findOrFail($id);
+
         return response()->json($employee);
     }
 
@@ -91,7 +92,7 @@ class EmployeeController extends Controller
             'surname' => 'required|string|max:255',
             'given_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
-            'birth_date' => 'nullable|date|before_or_equal:' . now()->subYears(18)->format('Y-m-d'),
+            'birth_date' => 'nullable|date|before_or_equal:'.now()->subYears(18)->format('Y-m-d'),
             'birth_place' => 'nullable|string|max:255',
         ], [
             'birth_date.before_or_equal' => 'Employee must be at least 18 years old.',

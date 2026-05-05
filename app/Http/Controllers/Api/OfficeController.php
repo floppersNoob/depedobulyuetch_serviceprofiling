@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Office;
 use App\Models\ActivityLog;
+use App\Models\Office;
+use App\Models\ServiceRecord;
 use Illuminate\Http\Request;
 
 class OfficeController extends Controller
@@ -12,7 +13,7 @@ class OfficeController extends Controller
     public function index()
     {
         // Only return offices that are currently in use (from present service records)
-        $usedOfficeIds = \App\Models\ServiceRecord::whereNull('date_to')
+        $usedOfficeIds = ServiceRecord::whereNull('date_to')
             ->distinct()
             ->pluck('office_id')
             ->toArray();
@@ -76,10 +77,10 @@ class OfficeController extends Controller
         $office = Office::findOrFail($id);
 
         // Check if office is in use by service records
-        $usageCount = \App\Models\ServiceRecord::where('office_id', $id)->count();
+        $usageCount = ServiceRecord::where('office_id', $id)->count();
         if ($usageCount > 0) {
             return response()->json([
-                'message' => "Cannot delete office '{$office->department}' because it is used in {$usageCount} service record(s)."
+                'message' => "Cannot delete office '{$office->department}' because it is used in {$usageCount} service record(s).",
             ], 422);
         }
 

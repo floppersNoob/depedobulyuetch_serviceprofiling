@@ -1,17 +1,17 @@
 <?php
 
-use App\Http\Controllers\Api\EmployeeController;
-use App\Http\Controllers\Api\ServiceRecordController;
-use App\Http\Controllers\Api\PositionController;
-use App\Http\Controllers\Api\OfficeController;
-use App\Http\Controllers\Api\EmploymentStatusController;
-use App\Http\Controllers\Api\SearchController;
-use App\Http\Controllers\Api\SalaryHistoryController;
-use App\Http\Controllers\Api\LeaveRecordController;
-use App\Http\Controllers\Api\SeparationRecordController;
-use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\EmploymentStatusController;
+use App\Http\Controllers\Api\LeaveRecordController;
+use App\Http\Controllers\Api\OfficeController;
+use App\Http\Controllers\Api\PositionController;
 use App\Http\Controllers\Api\PublicEmployeeController;
+use App\Http\Controllers\Api\SalaryHistoryController;
+use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\SeparationRecordController;
+use App\Http\Controllers\Api\ServiceRecordController;
 use Illuminate\Support\Facades\Route;
 
 // Public API routes (no auth required)

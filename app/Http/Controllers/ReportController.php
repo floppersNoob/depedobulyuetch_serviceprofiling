@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
-use App\Models\ServiceRecord;
-use App\Models\Position;
 use App\Models\EmploymentStatus;
-use App\Models\Office;
-use App\Models\SalaryHistory;
 use App\Models\LeaveRecord;
+use App\Models\Office;
+use App\Models\Position;
+use App\Models\SalaryHistory;
 use App\Models\SeparationRecord;
+use App\Models\ServiceRecord;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -36,7 +36,7 @@ class ReportController extends Controller
     public function parseServiceRecordExcel(Request $request, string $employeeId)
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls,csv'
+            'excel_file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
         $employee = Employee::findOrFail($employeeId);
@@ -55,7 +55,7 @@ class ReportController extends Controller
 
                 // Look for the service table header
                 if ($rowIndex > 10) {
-                    $cellValue = $worksheet->getCell('A' . $rowIndex)->getValue();
+                    $cellValue = $worksheet->getCell('A'.$rowIndex)->getValue();
                     if (stripos($cellValue, 'FROM') !== false || stripos($cellValue, 'SERVICE') !== false) {
                         $startRow = $rowIndex + 2; // Skip header rows
                         break;
@@ -67,63 +67,77 @@ class ReportController extends Controller
             foreach ($worksheet->getRowIterator() as $row) {
                 $rowIndex = $row->getRowIndex();
 
-                if ($rowIndex < $startRow) continue;
+                if ($rowIndex < $startRow) {
+                    continue;
+                }
 
                 // Get values from columns A-J
-                $dateFrom = $worksheet->getCell('A' . $rowIndex)->getValue();
-                $dateTo = $worksheet->getCell('B' . $rowIndex)->getValue();
-                $designation = $worksheet->getCell('C' . $rowIndex)->getValue();
-                $status = $worksheet->getCell('D' . $rowIndex)->getValue();
-                $salary = $worksheet->getCell('E' . $rowIndex)->getValue();
-                $station = $worksheet->getCell('F' . $rowIndex)->getValue();
-                $branch = $worksheet->getCell('G' . $rowIndex)->getValue();
-                $leave = $worksheet->getCell('H' . $rowIndex)->getValue();
-                $separationDate = $worksheet->getCell('I' . $rowIndex)->getValue();
-                $separationCause = $worksheet->getCell('J' . $rowIndex)->getValue();
+                $dateFrom = $worksheet->getCell('A'.$rowIndex)->getValue();
+                $dateTo = $worksheet->getCell('B'.$rowIndex)->getValue();
+                $designation = $worksheet->getCell('C'.$rowIndex)->getValue();
+                $status = $worksheet->getCell('D'.$rowIndex)->getValue();
+                $salary = $worksheet->getCell('E'.$rowIndex)->getValue();
+                $station = $worksheet->getCell('F'.$rowIndex)->getValue();
+                $branch = $worksheet->getCell('G'.$rowIndex)->getValue();
+                $leave = $worksheet->getCell('H'.$rowIndex)->getValue();
+                $separationDate = $worksheet->getCell('I'.$rowIndex)->getValue();
+                $separationCause = $worksheet->getCell('J'.$rowIndex)->getValue();
 
                 // Skip empty rows or rows with invalid dates (1970-01-01 indicates parsing error)
-                if (empty($dateFrom) && empty($designation)) continue;
+                if (empty($dateFrom) && empty($designation)) {
+                    continue;
+                }
 
                 // Skip rows with clearly invalid dates
-                if (!empty($dateFrom) && (strtoupper($dateFrom) === 'TO DATE' || strtoupper($dateFrom) === 'PRESENT' || $dateFrom === 0)) {
+                if (! empty($dateFrom) && (strtoupper($dateFrom) === 'TO DATE' || strtoupper($dateFrom) === 'PRESENT' || $dateFrom === 0)) {
                     continue;
                 }
 
                 // Parse date from Excel
                 $parsedDateFrom = null;
-                if (!empty($dateFrom) && is_numeric($dateFrom)) {
+                if (! empty($dateFrom) && is_numeric($dateFrom)) {
                     $parsedDateFrom = Date::excelToDateTimeObject($dateFrom)->format('Y-m-d');
                     // Skip if date is 1970-01-01 (invalid)
-                    if ($parsedDateFrom === '1970-01-01') continue;
-                } elseif (!empty($dateFrom)) {
+                    if ($parsedDateFrom === '1970-01-01') {
+                        continue;
+                    }
+                } elseif (! empty($dateFrom)) {
                     $parsedDateFrom = date('Y-m-d', strtotime($dateFrom));
                     // Skip if date is 1970-01-01 (invalid)
-                    if ($parsedDateFrom === '1970-01-01') continue;
+                    if ($parsedDateFrom === '1970-01-01') {
+                        continue;
+                    }
                 }
 
                 // Skip rows without valid date and designation
-                if (empty($parsedDateFrom) && empty($designation)) continue;
+                if (empty($parsedDateFrom) && empty($designation)) {
+                    continue;
+                }
 
                 $parsedDateTo = null;
-                if (!empty($dateTo)) {
+                if (! empty($dateTo)) {
                     // Handle "to date" or "present" as null (ongoing service)
                     if (strtoupper(trim($dateTo)) === 'TO DATE' || strtoupper(trim($dateTo)) === 'PRESENT') {
                         $parsedDateTo = null;
                     } elseif (is_numeric($dateTo)) {
                         $parsedDateTo = Date::excelToDateTimeObject($dateTo)->format('Y-m-d');
                         // Skip if date is 1970-01-01 (invalid)
-                        if ($parsedDateTo === '1970-01-01') $parsedDateTo = null;
+                        if ($parsedDateTo === '1970-01-01') {
+                            $parsedDateTo = null;
+                        }
                     } else {
                         $parsedDateTo = date('Y-m-d', strtotime($dateTo));
                         // Skip if date is 1970-01-01 (invalid)
-                        if ($parsedDateTo === '1970-01-01') $parsedDateTo = null;
+                        if ($parsedDateTo === '1970-01-01') {
+                            $parsedDateTo = null;
+                        }
                     }
                 }
 
                 // Parse salary
                 $salaryValue = 0;
                 $rateUnit = 'annually';
-                if (!empty($salary)) {
+                if (! empty($salary)) {
                     if (is_numeric($salary)) {
                         $salaryValue = floatval($salary);
                     } else {
@@ -140,14 +154,18 @@ class ReportController extends Controller
 
                 // Parse separation date
                 $parsedSeparationDate = null;
-                if (!empty($separationDate) && is_numeric($separationDate)) {
+                if (! empty($separationDate) && is_numeric($separationDate)) {
                     $parsedSeparationDate = Date::excelToDateTimeObject($separationDate)->format('Y-m-d');
                     // Treat 1970-01-01 as null (empty Excel cell artifact)
-                    if ($parsedSeparationDate === '1970-01-01') $parsedSeparationDate = null;
-                } elseif (!empty($separationDate)) {
+                    if ($parsedSeparationDate === '1970-01-01') {
+                        $parsedSeparationDate = null;
+                    }
+                } elseif (! empty($separationDate)) {
                     $parsedSeparationDate = date('Y-m-d', strtotime($separationDate));
                     // Treat 1970-01-01 as null (empty Excel cell artifact)
-                    if ($parsedSeparationDate === '1970-01-01') $parsedSeparationDate = null;
+                    if ($parsedSeparationDate === '1970-01-01') {
+                        $parsedSeparationDate = null;
+                    }
                 }
 
                 $parsedRecords[] = [
@@ -162,20 +180,20 @@ class ReportController extends Controller
                     'leave' => trim($leave),
                     'separation_date' => $parsedSeparationDate,
                     'separation_cause' => $parsedSeparationDate ? trim($separationCause) : null,
-                    'remarks' => !$parsedSeparationDate && trim($separationCause) ? trim($separationCause) : null,
+                    'remarks' => ! $parsedSeparationDate && trim($separationCause) ? trim($separationCause) : null,
                 ];
             }
 
             return response()->json([
                 'success' => true,
                 'records' => $parsedRecords,
-                'count' => count($parsedRecords)
+                'count' => count($parsedRecords),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to parse Excel: ' . $e->getMessage()
+                'message' => 'Failed to parse Excel: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -186,7 +204,7 @@ class ReportController extends Controller
     public function confirmServiceRecordImport(Request $request, string $employeeId)
     {
         $request->validate([
-            'records' => 'required|array'
+            'records' => 'required|array',
         ]);
 
         $employee = Employee::findOrFail($employeeId);
@@ -204,13 +222,13 @@ class ReportController extends Controller
             $allLeavesAreNone = true;
             $recordsWithLeave = [];
             foreach ($records as $index => $recordData) {
-                if (!empty($recordData['designation'])) {
+                if (! empty($recordData['designation'])) {
                     $recordsWithLeave[] = [
                         'index' => $index,
-                        'leave' => !empty($recordData['leave']) ? trim($recordData['leave']) : null,
-                        'date_from' => $recordData['date_from']
+                        'leave' => ! empty($recordData['leave']) ? trim($recordData['leave']) : null,
+                        'date_from' => $recordData['date_from'],
                     ];
-                    if (!empty($recordData['leave']) && strtolower(trim($recordData['leave'])) !== 'none') {
+                    if (! empty($recordData['leave']) && strtolower(trim($recordData['leave'])) !== 'none') {
                         $allLeavesAreNone = false;
                     }
                 }
@@ -218,8 +236,8 @@ class ReportController extends Controller
 
             // Find the latest record (most recent date_from) for leave handling
             $latestRecordIndex = null;
-            if ($allLeavesAreNone && !empty($recordsWithLeave)) {
-                usort($recordsWithLeave, function($a, $b) {
+            if ($allLeavesAreNone && ! empty($recordsWithLeave)) {
+                usort($recordsWithLeave, function ($a, $b) {
                     return strtotime($b['date_from'] ?? '1970-01-01') - strtotime($a['date_from'] ?? '1970-01-01');
                 });
                 $latestRecordIndex = $recordsWithLeave[0]['index'];
@@ -241,7 +259,7 @@ class ReportController extends Controller
 
                 // Create or find employment status
                 $employmentStatus = null;
-                if (!empty($recordData['status'])) {
+                if (! empty($recordData['status'])) {
                     $statusName = $recordData['status'];
                     $employmentStatus = EmploymentStatus::firstOrCreate(
                         ['status_name' => $statusName],
@@ -251,11 +269,11 @@ class ReportController extends Controller
 
                 // Create or find office
                 $office = null;
-                if (!empty($recordData['station']) || !empty($recordData['branch'])) {
+                if (! empty($recordData['station']) || ! empty($recordData['branch'])) {
                     $office = Office::firstOrCreate(
                         [
                             'department' => $recordData['station'],
-                            'branch' => $recordData['branch'] ?: 'Nat\'l'
+                            'branch' => $recordData['branch'] ?: 'Nat\'l',
                         ]
                     );
                 }
@@ -275,40 +293,69 @@ class ReportController extends Controller
                     $existingSeparation = $existingRecord->separationRecord;
 
                     // Compare basic fields
-                    if ($existingRecord->date_to != $recordData['date_to']) $hasChanges = true;
-                    if ($existingRecord->status_id != ($employmentStatus ? $employmentStatus->status_id : null)) $hasChanges = true;
-                    if ($existingRecord->office_id != ($office ? $office->office_id : null)) $hasChanges = true;
-                    if ($existingRecord->station_place != ($recordData['station'] ?? null)) $hasChanges = true;
-                    if ($existingRecord->branch != ($recordData['branch'] ?? null)) $hasChanges = true;
-                    if ($existingRecord->remarks != ($recordData['remarks'] ?? null)) $hasChanges = true;
+                    if ($existingRecord->date_to != $recordData['date_to']) {
+                        $hasChanges = true;
+                    }
+                    if ($existingRecord->status_id != ($employmentStatus ? $employmentStatus->status_id : null)) {
+                        $hasChanges = true;
+                    }
+                    if ($existingRecord->office_id != ($office ? $office->office_id : null)) {
+                        $hasChanges = true;
+                    }
+                    if ($existingRecord->station_place != ($recordData['station'] ?? null)) {
+                        $hasChanges = true;
+                    }
+                    if ($existingRecord->branch != ($recordData['branch'] ?? null)) {
+                        $hasChanges = true;
+                    }
+                    if ($existingRecord->remarks != ($recordData['remarks'] ?? null)) {
+                        $hasChanges = true;
+                    }
 
                     // Compare salary
                     if ($existingSalary) {
-                        if ($existingSalary->amount != $recordData['salary']) $hasChanges = true;
-                        if ($existingSalary->rate_unit != $recordData['salary_unit']) $hasChanges = true;
+                        if ($existingSalary->amount != $recordData['salary']) {
+                            $hasChanges = true;
+                        }
+                        if ($existingSalary->rate_unit != $recordData['salary_unit']) {
+                            $hasChanges = true;
+                        }
                     } else {
-                        if (!empty($recordData['salary'])) $hasChanges = true;
+                        if (! empty($recordData['salary'])) {
+                            $hasChanges = true;
+                        }
                     }
 
                     // Compare leave
-                    $leaveValue = !empty($recordData['leave']) ? trim($recordData['leave']) : null;
+                    $leaveValue = ! empty($recordData['leave']) ? trim($recordData['leave']) : null;
                     if ($existingLeave) {
-                        if ($existingLeave->leave_type != $leaveValue) $hasChanges = true;
+                        if ($existingLeave->leave_type != $leaveValue) {
+                            $hasChanges = true;
+                        }
                     } else {
-                        if (!empty($leaveValue) && strtolower($leaveValue) !== 'none') $hasChanges = true;
+                        if (! empty($leaveValue) && strtolower($leaveValue) !== 'none') {
+                            $hasChanges = true;
+                        }
                     }
 
                     // Compare separation
                     if ($existingSeparation) {
-                        if ($existingSeparation->separation_date != $recordData['separation_date']) $hasChanges = true;
-                        if ($existingSeparation->cause != trim($recordData['separation_cause'] ?? '')) $hasChanges = true;
+                        if ($existingSeparation->separation_date != $recordData['separation_date']) {
+                            $hasChanges = true;
+                        }
+                        if ($existingSeparation->cause != trim($recordData['separation_cause'] ?? '')) {
+                            $hasChanges = true;
+                        }
                     } else {
-                        if (!empty($recordData['separation_date']) || !empty(trim($recordData['separation_cause'] ?? ''))) $hasChanges = true;
+                        if (! empty($recordData['separation_date']) || ! empty(trim($recordData['separation_cause'] ?? ''))) {
+                            $hasChanges = true;
+                        }
                     }
 
                     // Only skip if no changes detected
-                    if (!$hasChanges) {
+                    if (! $hasChanges) {
                         $skippedCount++;
+
                         continue;
                     }
 
@@ -323,7 +370,7 @@ class ReportController extends Controller
                     ]);
 
                     // Update salary history
-                    if (!empty($recordData['salary'])) {
+                    if (! empty($recordData['salary'])) {
                         if ($existingSalary) {
                             $existingSalary->update([
                                 'amount' => $recordData['salary'],
@@ -345,7 +392,7 @@ class ReportController extends Controller
                             'leave_type' => $leaveValue,
                             'date_from' => $recordData['date_from'] ?? now(),
                         ]);
-                    } else if (!empty($leaveValue) && strtolower($leaveValue) !== 'none') {
+                    } elseif (! empty($leaveValue) && strtolower($leaveValue) !== 'none') {
                         LeaveRecord::create([
                             'service_id' => $existingRecord->service_id,
                             'leave_type' => $leaveValue,
@@ -354,7 +401,7 @@ class ReportController extends Controller
                     }
 
                     // Update separation record - only for real separations (with date)
-                    if (!empty($recordData['separation_date'])) {
+                    if (! empty($recordData['separation_date'])) {
                         if ($existingSeparation) {
                             $existingSeparation->update([
                                 'separation_date' => $recordData['separation_date'] ?? null,
@@ -370,6 +417,7 @@ class ReportController extends Controller
                     }
 
                     $importedCount++;
+
                     continue;
                 }
 
@@ -388,7 +436,7 @@ class ReportController extends Controller
                     ]);
 
                     // Create salary history
-                    if (!empty($recordData['salary'])) {
+                    if (! empty($recordData['salary'])) {
                         SalaryHistory::create([
                             'service_id' => $serviceRecord->service_id,
                             'amount' => $recordData['salary'],
@@ -398,8 +446,8 @@ class ReportController extends Controller
                     }
 
                     // Create leave record with special handling
-                    $leaveValue = !empty($recordData['leave']) ? trim($recordData['leave']) : null;
-                    if (!empty($leaveValue)) {
+                    $leaveValue = ! empty($recordData['leave']) ? trim($recordData['leave']) : null;
+                    if (! empty($leaveValue)) {
                         $shouldCreateLeaveRecord = false;
                         $leaveToCreate = $leaveValue;
 
@@ -413,7 +461,7 @@ class ReportController extends Controller
                                 $shouldCreateLeaveRecord = true;
                                 $leaveToCreate = '';
                             }
-                        } else if (strtolower($leaveValue) !== 'none') {
+                        } elseif (strtolower($leaveValue) !== 'none') {
                             // Normal case: create if not "none"
                             $shouldCreateLeaveRecord = true;
                             $leaveToCreate = $leaveValue;
@@ -429,7 +477,7 @@ class ReportController extends Controller
                     }
 
                     // Create separation record - only for real separations (with date)
-                    if (!empty($recordData['separation_date'])) {
+                    if (! empty($recordData['separation_date'])) {
                         SeparationRecord::create([
                             'service_id' => $serviceRecord->service_id,
                             'separation_date' => $recordData['separation_date'] ?? null,
@@ -446,9 +494,9 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Successfully imported {$importedCount} service records" . ($skippedCount > 0 ? " (skipped {$skippedCount} duplicates)" : ""),
+                'message' => "Successfully imported {$importedCount} service records".($skippedCount > 0 ? " (skipped {$skippedCount} duplicates)" : ''),
                 'imported_count' => $importedCount,
-                'skipped_count' => $skippedCount
+                'skipped_count' => $skippedCount,
             ]);
 
         } catch (\Exception $e) {
@@ -457,7 +505,7 @@ class ReportController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to import records: ' . $e->getMessage()
+                'message' => 'Failed to import records: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -473,8 +521,8 @@ class ReportController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('surname', 'like', "%{$search}%")
-                  ->orWhere('given_name', 'like', "%{$search}%")
-                  ->orWhere('middle_name', 'like', "%{$search}%");
+                    ->orWhere('given_name', 'like', "%{$search}%")
+                    ->orWhere('middle_name', 'like', "%{$search}%");
             });
         }
 

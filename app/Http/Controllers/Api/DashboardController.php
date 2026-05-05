@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Employee;
 use App\Models\Office;
 use App\Models\Position;
 use App\Models\ServiceRecord;
-use App\Models\ActivityLog;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {

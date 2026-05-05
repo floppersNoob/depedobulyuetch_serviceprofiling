@@ -16,6 +16,7 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect('/');
         }
+
         return view('auth.login');
     }
 
@@ -30,12 +31,13 @@ class AuthController extends Controller
         ]);
 
         $credentials = [
-            'email' => $request->username . '@dpwh.local',
+            'email' => $request->username.'@dpwh.local',
             'password' => $request->password,
         ];
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+
             return redirect('/');
         }
 
@@ -52,6 +54,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/public');
     }
 }

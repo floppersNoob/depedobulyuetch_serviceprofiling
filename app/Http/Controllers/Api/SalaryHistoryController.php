@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Employee;
 use App\Models\SalaryHistory;
 use App\Models\ServiceRecord;
-use App\Models\Employee;
-use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class SalaryHistoryController extends Controller
@@ -14,11 +14,11 @@ class SalaryHistoryController extends Controller
     public function index(Request $request)
     {
         $query = SalaryHistory::with('serviceRecord');
-        
+
         if ($request->has('service_id')) {
             $query->where('service_id', $request->input('service_id'));
         }
-        
+
         return $query->orderBy('effective_date', 'desc')->get();
     }
 

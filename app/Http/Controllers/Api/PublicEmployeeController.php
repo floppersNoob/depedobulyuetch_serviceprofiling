@@ -12,15 +12,15 @@ class PublicEmployeeController extends Controller
     {
         $query = Employee::query();
 
-        if ($request->has('search') && !empty($request->input('search'))) {
+        if ($request->has('search') && ! empty($request->input('search'))) {
             $search = $request->input('search');
             $searchTerms = explode(' ', trim($search));
             $query->where(function ($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function ($subQ) use ($term) {
                         $subQ->where('surname', 'like', "%{$term}%")
-                             ->orWhere('given_name', 'like', "%{$term}%")
-                             ->orWhere('middle_name', 'like', "%{$term}%");
+                            ->orWhere('given_name', 'like', "%{$term}%")
+                            ->orWhere('middle_name', 'like', "%{$term}%");
                     });
                 }
             });
@@ -28,14 +28,15 @@ class PublicEmployeeController extends Controller
 
         $perPage = min($request->input('per_page', 15), 50);
 
-        return $query->with(['serviceRecords' => function($query) {
-                $query->whereNull('date_to')->orderBy('date_from', 'desc')->limit(1);
-            }, 'serviceRecords.position', 'serviceRecords.employmentStatus'])
+        return $query->with(['serviceRecords' => function ($query) {
+            $query->whereNull('date_to')->orderBy('date_from', 'desc')->limit(1);
+        }, 'serviceRecords.position', 'serviceRecords.employmentStatus'])
             ->withCount('serviceRecords')
             ->orderBy('surname')
             ->paginate($perPage)
             ->through(function ($employee) {
                 $latestRecord = $employee->serviceRecords->first();
+
                 return [
                     'employee_id' => $employee->employee_id,
                     'surname' => $employee->surname,
@@ -52,9 +53,9 @@ class PublicEmployeeController extends Controller
 
     public function show(string $id)
     {
-        $employee = Employee::with(['serviceRecords' => function($query) {
-                $query->orderBy('date_from', 'asc');
-            }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office', 'serviceRecords.salaryHistories'])
+        $employee = Employee::with(['serviceRecords' => function ($query) {
+            $query->orderBy('date_from', 'asc');
+        }, 'serviceRecords.position', 'serviceRecords.employmentStatus', 'serviceRecords.office', 'serviceRecords.salaryHistories'])
             ->findOrFail($id);
 
         return response()->json([

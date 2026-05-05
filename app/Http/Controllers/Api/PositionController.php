@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Position;
 use App\Models\ActivityLog;
+use App\Models\Position;
+use App\Models\ServiceRecord;
 use Illuminate\Http\Request;
 
 class PositionController extends Controller
@@ -12,7 +13,7 @@ class PositionController extends Controller
     public function index()
     {
         // Only return positions that are currently in use (from present service records)
-        $usedPositionIds = \App\Models\ServiceRecord::whereNull('date_to')
+        $usedPositionIds = ServiceRecord::whereNull('date_to')
             ->distinct()
             ->pluck('position_id')
             ->toArray();
@@ -48,7 +49,7 @@ class PositionController extends Controller
     public function update(Request $request, string $id)
     {
         $validated = $request->validate([
-            'position_name' => 'required|string|max:255|unique:positions,position_name,' . $id . ',position_id',
+            'position_name' => 'required|string|max:255|unique:positions,position_name,'.$id.',position_id',
         ]);
 
         $position = Position::findOrFail($id);
@@ -70,10 +71,10 @@ class PositionController extends Controller
         $position = Position::findOrFail($id);
 
         // Check if position is in use by service records
-        $usageCount = \App\Models\ServiceRecord::where('position_id', $id)->count();
+        $usageCount = ServiceRecord::where('position_id', $id)->count();
         if ($usageCount > 0) {
             return response()->json([
-                'message' => "Cannot delete position '{$position->position_name}' because it is used in {$usageCount} service record(s)."
+                'message' => "Cannot delete position '{$position->position_name}' because it is used in {$usageCount} service record(s).",
             ], 422);
         }
 
