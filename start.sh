@@ -3,11 +3,11 @@ set -e
 
 echo "=== Starting application setup ==="
 
-# Create SQLite database if it doesn't exist
-if [ ! -f /var/www/html/database/database.sqlite ]; then
+# Create SQLite database in storage folder (not database folder - volume mount overwrites it)
+if [ ! -f /var/www/html/storage/database.sqlite ]; then
     echo "Creating SQLite database..."
-    touch /var/www/html/database/database.sqlite
-    chmod 666 /var/www/html/database/database.sqlite
+    touch /var/www/html/storage/database.sqlite
+    chmod 666 /var/www/html/storage/database.sqlite
     echo "Database created."
 fi
 
