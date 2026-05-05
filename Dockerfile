@@ -39,6 +39,10 @@ WORKDIR /var/www/html
 # Copy all files
 COPY . .
 
+# Ensure bootstrap/cache exists and is writable before composer install
+# (required by Composer's post-autoload-dump script: php artisan package:discover)
+RUN mkdir -p /var/www/html/bootstrap/cache && chmod -R 755 /var/www/html/bootstrap/cache
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
