@@ -39,8 +39,16 @@ WORKDIR /var/www/html
 # Copy all files
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Create required directories and set permissions before composer
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs database \
+    && chmod -R 777 bootstrap/cache storage database
+
+# Install PHP dependencies (without scripts to avoid permission issues during build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Generate autoload and run discovery
+RUN composer dump-autoload --optimize \
+    && php artisan package:discover --ansi
 
 # Install Node dependencies and build
 RUN npm ci && npm run build
@@ -48,14 +56,8 @@ RUN npm ci && npm run build
 # Cache Laravel configs
 RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
-
-# Create SQLite database directory
-RUN mkdir -p /var/www/html/database \
-    && chown -R www-data:www-data /var/www/html/database
+# Set proper ownership for Apache
+RUN chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
 
