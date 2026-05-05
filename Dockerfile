@@ -43,13 +43,12 @@ RUN composer dump-autoload --optimize \
 # Install Node dependencies and build
 RUN npm ci && npm run build
 
-# Create SQLite database file and run migrations
-RUN touch /var/www/html/database/database.sqlite \
-    && chmod 666 /var/www/html/database/database.sqlite \
-    && php artisan migrate --force
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Expose port (Railway sets PORT env var)
 EXPOSE 80
 
-# Start PHP built-in server using Railway's PORT
-CMD php artisan serve --host 0.0.0.0 --port ${PORT:-80}
+# Start using startup script (creates DB at runtime)
+CMD ["/start.sh"]
