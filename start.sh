@@ -9,5 +9,8 @@ fi
 # Run migrations
 php artisan migrate --force
 
+# Seed the database (create admin user)
+php artisan db:seed --force
+
 # Start PHP server
 php artisan serve --host 0.0.0.0 --port ${PORT:-80}
