@@ -52,4 +52,4 @@ RUN dos2unix /start.sh && chmod +x /start.sh
 EXPOSE 80
 
 # Start using startup script (creates DB at runtime)
-CMD ["/start.sh"]
+CMD ["/bin/bash", "/start.sh"]
