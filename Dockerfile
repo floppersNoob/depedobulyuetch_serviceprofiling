@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libsqlite3-dev \
     sqlite3 \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -38,6 +40,12 @@ COPY . .
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install Node dependencies and build
+RUN npm ci && npm run build
+
+# Cache Laravel configs
+RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
