@@ -30,6 +30,9 @@ WORKDIR /var/www/html
 # Copy all files
 COPY . .
 
+# Backup migrations folder (Railway volume mount overwrites database folder)
+RUN cp -r /var/www/html/database/migrations /var/www/html/migrations_backup
+
 # Create required directories and set permissions
 RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions storage/framework/views storage/logs database \
     && chmod -R 777 bootstrap/cache storage database
