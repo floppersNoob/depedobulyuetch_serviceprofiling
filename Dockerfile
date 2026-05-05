@@ -43,6 +43,11 @@ RUN composer dump-autoload --optimize \
 # Install Node dependencies and build
 RUN npm ci && npm run build
 
+# Create SQLite database file and run migrations
+RUN touch /var/www/html/database/database.sqlite \
+    && chmod 666 /var/www/html/database/database.sqlite \
+    && php artisan migrate --force
+
 # Expose port (Railway sets PORT env var)
 EXPOSE 80
 
