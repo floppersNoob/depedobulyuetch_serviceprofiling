@@ -50,7 +50,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction
 RUN npm ci && npm run build
 
 # Cache Laravel configs
-RUN php artisan config:cache && php artisan route:cache && php artisan view:cache
+RUN php artisan config:cache && php artisan route:cache
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
