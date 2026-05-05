@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libsqlite3-dev \
     sqlite3 \
+    dos2unix \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -43,9 +44,9 @@ RUN composer dump-autoload --optimize \
 # Install Node dependencies and build
 RUN npm ci && npm run build
 
-# Copy startup script
+# Copy startup script and convert line endings
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
+RUN dos2unix /start.sh && chmod +x /start.sh
 
 # Expose port (Railway sets PORT env var)
 EXPOSE 80
