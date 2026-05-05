@@ -43,8 +43,8 @@ RUN composer dump-autoload --optimize \
 # Install Node dependencies and build
 RUN npm ci && npm run build
 
-# Expose port
+# Expose port (Railway sets PORT env var)
 EXPOSE 80
 
-# Start PHP built-in server
-CMD php artisan serve --host 0.0.0.0 --port 80
+# Start PHP built-in server using Railway's PORT
+CMD php artisan serve --host 0.0.0.0 --port ${PORT:-80}
