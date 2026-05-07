@@ -22,121 +22,84 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #010066 0%, #000033 50%, #010066 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.03) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 40%);
-            pointer-events: none;
+            background: rgba(1, 0, 102, 0.05);
         }
 
         .login-container {
             width: 100%;
             max-width: 480px;
-            padding: 0 24px;
+            padding: 24px;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25),
-                        0 10px 30px rgba(1, 0, 102, 0.15),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-            padding: 32px 36px;
-            position: relative;
-        }
-
-        .login-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 20px;
-            right: 20px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #eb3505, #010066, transparent);
-            border-radius: 0 0 4px 4px;
-            opacity: 0.6;
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px 32px;
+            box-shadow: 0 4px 24px rgba(1, 0, 102, 0.1);
+            border: 1px solid rgba(1, 0, 102, 0.08);
         }
 
         .logo-section {
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .logo-wrapper {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, rgba(1, 0, 102, 0.08) 0%, rgba(235, 53, 5, 0.05) 100%);
-            border-radius: 20px;
+            width: 56px;
+            height: 56px;
+            background: #ffffff;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 14px;
-            box-shadow: 0 4px 20px rgba(1, 0, 102, 0.15),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            padding: 14px;
-            border: 1px solid rgba(1, 0, 102, 0.1);
+            margin: 0 auto 8px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0, 119, 182, 0.1);
         }
 
         .logo-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(1, 0, 102, 0.1));
         }
 
         .app-title {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 600;
             color: #010066;
-            letter-spacing: -0.3px;
         }
 
         .app-subtitle {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 6px;
-            font-weight: 500;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
         }
 
         .government-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: #8e8e93;
+            gap: 5px;
+            font-size: 10px;
+            color: #010066;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-top: 8px;
+            margin-top: 6px;
             padding: 4px 10px;
             background: rgba(1, 0, 102, 0.05);
             border-radius: 20px;
-            border: 1px solid rgba(1, 0, 102, 0.1);
+            border: 1px solid rgba(1, 0, 102, 0.15);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 500;
-            color: #3a3a3c;
+            color: #334155;
             margin-bottom: 8px;
-            padding-left: 4px;
         }
 
         .input-wrapper {
@@ -145,20 +108,28 @@
 
         .form-input {
             width: 100%;
-            padding: 12px 14px;
-            font-size: 15px;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 12px;
-            background: white;
+            padding: 12px 12px 12px 40px;
+            font-size: 14px;
+            border: 2px solid rgba(1, 0, 102, 0.1);
+            border-radius: 10px;
+            background: #ffffff;
             outline: none;
             transition: all 0.2s ease;
             font-family: inherit;
             height: 44px;
         }
 
+        .form-input.password-field {
+            padding-right: 40px;
+        }
+
         .form-input:focus {
             border-color: #010066;
-            box-shadow: 0 0 0 3px rgba(1, 0, 102, 0.15);
+            box-shadow: 0 0 0 4px rgba(1, 0, 102, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #94a3b8;
         }
 
         .input-icon {
@@ -166,30 +137,47 @@
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #c7c7cc;
-            font-size: 16px;
+            color: #010066;
+            font-size: 14px;
         }
 
-        .form-input.with-icon {
-            padding-left: 40px;
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #010066;
+            font-size: 14px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
         }
 
         .error-message {
             display: flex;
             align-items: center;
             gap: 6px;
-            color: #ff3b30;
+            color: #dc2626;
             font-size: 13px;
             margin-top: 6px;
-            padding-left: 4px;
+            background: #fef2f2;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
         }
 
         .remember-section {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-            padding-left: 4px;
+            gap: 8px;
+            margin-bottom: 16px;
         }
 
         .checkbox-wrapper {
@@ -209,12 +197,13 @@
         .checkbox-custom {
             width: 20px;
             height: 20px;
-            border: 2px solid #c7c7cc;
+            border: 2px solid #cbd5e1;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            background: #ffffff;
         }
 
         .checkbox-wrapper input[type="checkbox"]:checked + .checkbox-custom {
@@ -223,7 +212,7 @@
         }
 
         .checkbox-custom i {
-            color: white;
+            color: #ffffff;
             font-size: 11px;
             opacity: 0;
             transition: opacity 0.2s ease;
@@ -235,46 +224,45 @@
 
         .remember-label {
             font-size: 14px;
-            color: #3a3a3c;
+            color: #475569;
             cursor: pointer;
         }
 
         .login-button {
             width: 100%;
-            padding: 13px;
-            font-size: 15px;
+            padding: 12px;
+            font-size: 14px;
             font-weight: 600;
-            color: white;
-            background: linear-gradient(135deg, #010066 0%, #000033 100%);
+            color: #ffffff;
+            background: linear-gradient(135deg, #010066 0%, #000044 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
+            height: 44px;
             box-shadow: 0 4px 14px rgba(1, 0, 102, 0.3);
-            height: 48px;
         }
 
         .login-button:hover {
-            background: linear-gradient(135deg, #000055 0%, #000022 100%);
+            background: linear-gradient(135deg, #000055 0%, #000033 100%);
             transform: translateY(-1px);
             box-shadow: 0 6px 20px rgba(1, 0, 102, 0.4);
         }
 
         .login-button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(1, 0, 102, 0.3);
         }
 
         .public-button {
             width: 100%;
-            padding: 12px;
-            font-size: 14px;
+            padding: 10px;
+            font-size: 13px;
             font-weight: 500;
             color: #010066;
-            background: rgba(1, 0, 102, 0.06);
-            border: 1px solid rgba(1, 0, 102, 0.15);
-            border-radius: 12px;
+            background: rgba(1, 0, 102, 0.05);
+            border: 2px solid rgba(1, 0, 102, 0.15);
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
             font-family: inherit;
@@ -282,12 +270,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             margin-top: 10px;
         }
 
         .public-button:hover {
-            background: rgba(1, 0, 102, 0.12);
+            background: rgba(1, 0, 102, 0.1);
             border-color: rgba(1, 0, 102, 0.25);
         }
 
@@ -295,44 +283,9 @@
             font-size: 13px;
         }
 
-        .default-credentials {
-            margin-top: 24px;
-            padding: 16px;
-            background: rgba(0, 122, 255, 0.08);
-            border-radius: 12px;
-            border: 1px solid rgba(0, 122, 255, 0.15);
-        }
-
-        .default-credentials-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: #007aff;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .credential-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #3a3a3c;
-            margin-bottom: 4px;
-        }
-
-        .credential-label {
-            color: #8e8e93;
-        }
-
-        .credential-value {
-            font-family: 'SF Mono', monospace;
-            font-weight: 500;
-            color: #007aff;
-        }
-
         @media (max-width: 480px) {
             .login-card {
-                padding: 32px 24px;
+                padding: 28px 24px;
             }
         }
     </style>
@@ -347,7 +300,7 @@
                 <h1 class="app-title">Service Profiling System</h1>
                 <p class="app-subtitle">Department of Public Works and Highways</p>
                 <div class="government-badge">
-                    <i class="fas fa-shield-alt" style="color: #eb3505;"></i>
+                    <i class="fas fa-shield-alt"></i>
                     <span>Government Service</span>
                 </div>
             </div>
@@ -363,7 +316,7 @@
                             type="text"
                             id="username"
                             name="username"
-                            class="form-input with-icon"
+                            class="form-input"
                             placeholder="Enter username"
                             value="{{ old('username') }}"
                             required
@@ -386,10 +339,13 @@
                             type="password"
                             id="password"
                             name="password"
-                            class="form-input with-icon"
+                            class="form-input password-field"
                             placeholder="Enter password"
                             required
                         >
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            <i class="fas fa-eye" id="toggleIcon"></i>
+                        </button>
                     </div>
                     @error('password')
                         <div class="error-message">
@@ -420,5 +376,22 @@
             </a>
         </div>
     </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+    </script>
 </body>
 </html>

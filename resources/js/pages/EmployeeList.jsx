@@ -219,24 +219,13 @@ const EmployeeList = () => {
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Delete Employee?',
-            text: 'Are you sure you want to delete this employee? This action cannot be undone.',
+            text: 'This action cannot be undone.',
             showCancelButton: true,
             confirmButtonText: 'Delete',
             cancelButtonText: 'Cancel',
-            confirmButtonColor: '#ff3b30',
-            cancelButtonColor: '#8e8e93',
-            reverseButtons: true,
-            background: '#fff',
-            backdrop: 'rgba(0,0,0,0.4)',
-            showClass: { popup: 'animate__animated animate__fadeIn' },
-            hideClass: { popup: 'animate__animated animate__fadeOut' },
-            customClass: {
-                popup: 'ios-alert-popup',
-                title: 'ios-alert-title',
-                confirmButton: 'ios-alert-btn-danger',
-                cancelButton: 'ios-alert-btn-cancel',
-                actions: 'ios-alert-actions'
-            }
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            reverseButtons: true
         });
 
         if (!result.isConfirmed) return;
@@ -245,20 +234,11 @@ const EmployeeList = () => {
             await axios.delete(`/api/employees/${id}`);
             Swal.fire({
                 title: 'Deleted',
-                text: 'Employee has been deleted successfully.',
+                text: 'Employee has been deleted.',
                 confirmButtonText: 'OK',
-                confirmButtonColor: '#007aff',
-                background: '#fff',
-                backdrop: 'rgba(0,0,0,0.4)',
+                confirmButtonColor: '#010066',
                 timer: 2000,
-                timerProgressBar: true,
-                showClass: { popup: 'animate__animated animate__fadeIn' },
-                hideClass: { popup: 'animate__animated animate__fadeOut' },
-                customClass: {
-                    popup: 'ios-alert-popup',
-                    title: 'ios-alert-title',
-                    confirmButton: 'ios-alert-btn'
-                }
+                timerProgressBar: true
             });
             employeesCache.data = null;
             employeesCache.timestamp = 0;
@@ -269,16 +249,7 @@ const EmployeeList = () => {
                     title: 'Cannot Delete',
                     text: error.response.data.message || 'This employee cannot be deleted.',
                     confirmButtonText: 'OK',
-                    confirmButtonColor: '#007aff',
-                    background: '#fff',
-                    backdrop: 'rgba(0,0,0,0.4)',
-                    showClass: { popup: 'animate__animated animate__fadeIn' },
-                    hideClass: { popup: 'animate__animated animate__fadeOut' },
-                    customClass: {
-                        popup: 'ios-alert-popup',
-                        title: 'ios-alert-title',
-                        confirmButton: 'ios-alert-btn'
-                    }
+                    confirmButtonColor: '#010066'
                 });
             } else {
                 addToast('Failed to delete employee', 'error');
@@ -350,37 +321,36 @@ const EmployeeList = () => {
     // Only show skeleton if loading AND no cached employees to display
     if (showSkeleton && employees.length === 0) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-gray-50/80 to-white p-6">
+            <div className="min-h-screen bg-white p-6">
                 <div className="flex justify-between items-center mb-6">
-                    <div className="h-7 bg-gray-200/60 rounded-xl w-28 animate-pulse"></div>
-                    <div className="h-9 bg-gray-200/60 rounded-xl w-28 animate-pulse"></div>
+                    <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
+                    <div className="h-9 bg-gray-200 rounded-lg w-28 animate-pulse"></div>
                 </div>
                 
-                <div className="flex flex-wrap gap-2 mb-6">
-                    {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-9 bg-gray-200/60 rounded-xl w-36 animate-pulse" style={{animationDelay: `${i * 100}ms`}}></div>
+                <div className="flex flex-wrap gap-3 mb-6">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-10 bg-gray-200 rounded-lg w-40 animate-pulse" style={{animationDelay: `${i * 100}ms`}}></div>
                     ))}
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="bg-white/60 backdrop-blur-xl rounded-2xl border border-gray-200/40 p-5" style={{animationDelay: `${i * 100}ms`}}>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="bg-gray-200/60 rounded-full w-12 h-12 animate-pulse"></div>
+                        <div key={i} className="bg-gray-50 border border-gray-200 rounded-xl p-4" style={{animationDelay: `${i * 100}ms`}}>
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="bg-gray-200 rounded-full w-10 h-10 animate-pulse"></div>
                                 <div className="flex-1">
-                                    <div className="h-5 bg-gray-200/60 rounded-lg w-3/4 mb-2 animate-pulse"></div>
-                                    <div className="h-4 bg-gray-200/60 rounded-lg w-1/2 animate-pulse"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse"></div>
+                                    <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
                                 </div>
                             </div>
-                            <div className="space-y-2 mb-4">
-                                <div className="h-4 bg-gray-200/60 rounded-lg animate-pulse"></div>
-                                <div className="h-4 bg-gray-200/60 rounded-lg animate-pulse"></div>
-                                <div className="h-4 bg-gray-200/60 rounded-lg animate-pulse"></div>
+                            <div className="space-y-2 mb-3">
+                                <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+                                <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
                             </div>
                             <div className="flex gap-2">
-                                <div className="h-9 bg-gray-200/60 rounded-xl flex-1 animate-pulse"></div>
-                                <div className="h-9 bg-gray-200/60 rounded-lg w-9 animate-pulse"></div>
-                                <div className="h-9 bg-gray-200/60 rounded-lg w-9 animate-pulse"></div>
+                                <div className="h-8 bg-gray-200 rounded-lg flex-1 animate-pulse"></div>
+                                <div className="h-8 bg-gray-200 rounded w-8 animate-pulse"></div>
+                                <div className="h-8 bg-gray-200 rounded w-8 animate-pulse"></div>
                             </div>
                         </div>
                     ))}
@@ -390,32 +360,32 @@ const EmployeeList = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-gray-50/80 to-white p-6">
+        <div className="min-h-screen bg-white p-6">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Employees</h1>
+                    <h1 className="text-xl font-semibold text-[#010066]">Employees</h1>
                     {isRefreshing && (
-                        <span className="text-xs text-[#007aff] animate-pulse flex items-center mt-1">
+                        <span className="text-xs text-[#010066] animate-pulse flex items-center mt-1">
                             <i className="fas fa-sync-alt fa-spin mr-1.5"></i>Updating...
                         </span>
                     )}
                 </div>
                 <button
                     onClick={openModal}
-                    className="bg-[#007aff] text-white px-4 py-2 rounded-xl hover:bg-[#0056b3] transition-all duration-200 font-semibold text-sm shadow-sm"
+                    className="bg-[#010066] text-white px-4 py-2 rounded-lg hover:bg-[#000055] transition-all font-medium text-sm"
                 >
                     <i className="fas fa-plus mr-1.5"></i>Add Employee
                 </button>
             </div>
 
-            {/* Search and Filters - iOS style */}
-            <div className="flex flex-wrap gap-2 mb-6">
+            {/* Search and Filters */}
+            <div className="flex flex-wrap gap-3 mb-6">
                 <select
                     value={filters.office}
                     onChange={(e) => setFilters({...filters, office: e.target.value})}
-                    className="bg-white border border-gray-200/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] w-44 transition-all"
+                    className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066]/20 focus:border-[#010066] w-40 transition-all"
                 >
                     <option value="">All Offices</option>
                     {offices.map(office => (
@@ -427,7 +397,7 @@ const EmployeeList = () => {
                 <select
                     value={filters.position}
                     onChange={(e) => setFilters({...filters, position: e.target.value})}
-                    className="bg-white border border-gray-200/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] w-44 transition-all"
+                    className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066]/20 focus:border-[#010066] w-40 transition-all"
                 >
                     <option value="">All Designations</option>
                     {positions.map(position => (
@@ -439,7 +409,7 @@ const EmployeeList = () => {
                 <select
                     value={filters.status}
                     onChange={(e) => setFilters({...filters, status: e.target.value})}
-                    className="bg-white border border-gray-200/80 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] w-44 transition-all"
+                    className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066]/20 focus:border-[#010066] w-40 transition-all"
                 >
                     <option value="">All Status</option>
                     {statuses.map(status => (
@@ -449,13 +419,13 @@ const EmployeeList = () => {
                     ))}
                 </select>
                 <div className="relative">
-                    <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search employees..."
-                        className="bg-white border border-gray-200/80 rounded-xl pl-9 pr-3 py-2 w-48 text-sm focus:outline-none focus:ring-2 focus:ring-[#007aff]/30 focus:border-[#007aff] transition-all"
+                        placeholder="Search..."
+                        className="bg-white border border-gray-200 rounded-lg pl-9 pr-3 py-2 w-48 text-sm focus:outline-none focus:ring-2 focus:ring-[#010066]/20 focus:border-[#010066] transition-all"
                     />
                 </div>
                 {(search || filters.office || filters.position || filters.status) && (
@@ -464,24 +434,24 @@ const EmployeeList = () => {
                             setSearch('');
                             setFilters({ office: '', position: '', status: '', yearsOfService: '' });
                         }}
-                        className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100/80 hover:bg-[#ff3b30]/10 hover:text-[#ff3b30] transition-colors text-gray-400"
+                        className="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-50 hover:text-red-500 transition-colors text-gray-400"
                     >
                         <i className="fas fa-times"></i>
                     </button>
                 )}
             </div>
 
-            {/* Employee Grid - iOS style */}
+            {/* Employee Grid */}
             {filteredEmployees.length === 0 ? (
-                <div className="text-center py-20 bg-white/60 backdrop-blur-xl border border-gray-200/40 rounded-2xl">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i className="fas fa-users text-gray-300 text-2xl"></i>
+                <div className="text-center py-16 bg-gray-50 border border-gray-200 rounded-xl">
+                    <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i className="fas fa-users text-gray-300 text-xl"></i>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">No employees found</h3>
                     <p className="text-gray-400 text-sm mb-5">Get started by adding your first employee</p>
                     <button
                         onClick={openModal}
-                        className="bg-[#007aff] text-white px-6 py-2.5 rounded-xl hover:bg-[#0056b3] transition-all font-semibold text-sm shadow-sm"
+                        className="bg-[#010066] text-white px-5 py-2 rounded-lg hover:bg-[#000055] transition-all font-medium text-sm"
                     >
                         <i className="fas fa-plus mr-1.5"></i>Add Employee
                     </button>
@@ -489,69 +459,63 @@ const EmployeeList = () => {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredEmployees.map((employee) => (
-                        <div key={employee.employee_id} className="bg-white/80 backdrop-blur-xl border border-gray-200/60 rounded-2xl p-5 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-200 group">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-12 h-12 bg-gradient-to-br from-[#007aff] to-[#5856d6] rounded-full flex items-center justify-center text-white font-semibold text-lg shadow-md">
+                        <div key={employee.employee_id} className="border border-gray-200 rounded-xl p-4 hover:border-[#010066]/30 transition-all">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-10 h-10 bg-[#010066] rounded-full flex items-center justify-center text-white font-semibold text-sm">
                                     {employee.given_name?.[0]}{employee.surname?.[0]}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-gray-900 tracking-tight truncate">
+                                    <h3 className="font-semibold text-gray-900 truncate text-sm">
                                         {employee.surname}, {employee.given_name}
                                     </h3>
-                                    <p className="text-sm text-gray-400 truncate">{employee.middle_name || ''}</p>
+                                    <p className="text-xs text-gray-400 truncate">{employee.middle_name || ''}</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-2.5 mb-4 text-sm">
+                            <div className="space-y-2 mb-3 text-sm">
                                 {employee.service_records && employee.service_records.length > 0 && (
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400">Position</span>
-                                        <span className="font-medium text-gray-700 truncate max-w-[60%] text-right">{employee.service_records[0]?.position?.position_name || '-'}</span>
+                                        <span className="font-medium text-gray-700 truncate max-w-[60%] text-right text-xs">{employee.service_records[0]?.position?.position_name || '-'}</span>
                                     </div>
                                 )}
                                 {employee.service_records && employee.service_records.length > 0 && (
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-400">Status</span>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                             employee.service_records[0]?.employment_status?.status_name?.includes('Permanent')
-                                                ? 'bg-[#007aff]/10 text-[#007aff]'
+                                                ? 'bg-blue-100 text-blue-700'
                                                 : employee.service_records[0]?.employment_status?.status_name?.includes('Casual')
-                                                    ? 'bg-[#34c759]/10 text-[#34c759]'
-                                                    : 'bg-[#ff9500]/10 text-[#ff9500]'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-orange-100 text-orange-700'
                                         }`}>
                                             {employee.service_records[0]?.employment_status?.status_name || '-'}
                                         </span>
                                     </div>
                                 )}
-                                {employee.birth_date && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Birth Date</span>
-                                        <span className="font-medium text-gray-700">{new Date(employee.birth_date).toLocaleDateString()}</span>
-                                    </div>
-                                )}
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-400">Records</span>
-                                    <span className="font-medium text-gray-700">{employee.service_records_count || 0}</span>
+                                    <span className="font-medium text-gray-700 text-xs">{employee.service_records_count || 0}</span>
                                 </div>
                             </div>
 
                             <div className="flex gap-2">
                                 <Link
                                     to={`/employees/${employee.employee_id}`}
-                                    className="flex-1 text-center bg-[#007aff] text-white px-3 py-2 rounded-xl text-sm font-semibold hover:bg-[#0056b3] transition-all"
+                                    className="flex-1 text-center bg-[#010066] text-white px-3 py-2 rounded-lg text-xs font-medium hover:bg-[#000055] transition-all"
                                 >
                                     View
                                 </Link>
                                 <button
                                     onClick={() => openEditModal(employee)}
-                                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#007aff]/10 text-[#007aff] hover:bg-[#007aff]/20 transition-all"
+                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all"
                                     title="Edit"
                                 >
                                     <i className="fas fa-pencil-alt text-xs"></i>
                                 </button>
                                 <button
                                     onClick={() => handleDelete(employee.employee_id)}
-                                    className="w-9 h-9 flex items-center justify-center rounded-xl bg-[#ff3b30]/10 text-[#ff3b30] hover:bg-[#ff3b30]/20 transition-all"
+                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 text-red-500 hover:bg-red-50 transition-all"
                                     title="Delete"
                                 >
                                     <i className="fas fa-trash text-xs"></i>
